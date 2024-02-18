@@ -23,7 +23,7 @@ namespace rndr {
         std::vector<ndk_helper::mdl::Model> models_;
         std::unique_ptr<ndk_helper::shdr::Shader> shader_;
         std::unique_ptr<ndk_helper::shdr::Shader> outlined_;
-        std::unique_ptr<ndk_helper::shdr::Shader> screenShader_;
+        std::unique_ptr<ndk_helper::shdr::Shader> normalShader_;
 
         GLuint uboMatrices_{0};
 

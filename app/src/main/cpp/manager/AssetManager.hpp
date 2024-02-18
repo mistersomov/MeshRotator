@@ -19,7 +19,11 @@ namespace assetmgr {
         AssetManager(AAssetManager* assetManager);
         ~AssetManager();
 
-        ndk_helper::shdr::Shader* load_shader(const std::string&, const std::string&);
+        ndk_helper::shdr::Shader* load_shader(
+            const std::string&,
+            const std::string&,
+            const std::string&
+        );
         std::shared_ptr<ndk_helper::mesh::Texture> load_texture(const std::string&, const std::string&);
         std::vector<aiMesh*> load_mesh(const std::string&);
     };

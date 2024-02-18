@@ -15,7 +15,8 @@ assetmgr::AssetManager::~AssetManager() {
 
 ndk_helper::shdr::Shader* assetmgr::AssetManager::load_shader(
     const std::string &vPath,
-    const std::string &fPath
+    const std::string &fPath,
+    const std::string &gPath
 ) {
     ndk_helper::shdr::Shader* program = nullptr;
     GLuint vShader = loadShader(GL_VERTEX_SHADER, vPath);
@@ -26,11 +27,21 @@ ndk_helper::shdr::Shader* assetmgr::AssetManager::load_shader(
     if (!fShader) {
         return nullptr;
     }
+    GLuint gShader = 0;
+    if (!gPath.empty()) {
+        gShader = loadShader(GL_GEOMETRY_SHADER, gPath);
+        if (!gShader) {
+            return nullptr;
+        }
+    }
     GLuint programID = glCreateProgram();
 
     if (programID) {
         glAttachShader(programID, vShader);
         glAttachShader(programID, fShader);
+        if (gShader) {
+            glAttachShader(programID, gShader);
+        }
         glLinkProgram(programID);
         GLint linkStatus = GL_FALSE;
         glGetProgramiv(programID, GL_LINK_STATUS, &linkStatus);
@@ -56,6 +67,9 @@ ndk_helper::shdr::Shader* assetmgr::AssetManager::load_shader(
 
     glDeleteShader(vShader);
     glDeleteShader(fShader);
+    if (!gPath.empty() && gShader) {
+        glDeleteShader(gShader);
+    }
 
     return program;
 }
@@ -70,7 +84,8 @@ GLuint assetmgr::AssetManager::loadShader(
         auto asset = AAssetManager_open(assetManager_, path.c_str(), AASSET_MODE_BUFFER);
         if (asset) {
             size_t size = AAsset_getLength(asset);
-            std::string buffer(size, '\0');
+            std::string buffer;
+            buffer.resize(size);
             AAsset_read(asset, &buffer[0], size);
             AAsset_close(asset);
             const char* source = buffer.c_str();
@@ -80,7 +95,7 @@ GLuint assetmgr::AssetManager::loadShader(
             GLint shaderCompiled = 0;
             glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompiled);
 
-            // If the shdr doesn't compile, log the result to the terminal for debugging
+            // If the shader doesn't compile, log the result to the terminal for debugging
             if (!shaderCompiled) {
                 GLint infoLength = 0;
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);

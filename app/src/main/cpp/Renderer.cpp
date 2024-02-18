@@ -76,7 +76,12 @@ void rndr::Renderer::prepare_graphics() {
     EGLSurface surface = eglCreateWindowSurface(display, config, app_->window, nullptr);
 
     // Create a GLES 3 context
-    EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
+    EGLint contextAttribs[] = {
+        EGL_CONTEXT_MAJOR_VERSION,
+        3, EGL_CONTEXT_MINOR_VERSION,
+        2,
+        EGL_NONE
+    };
     EGLContext context = eglCreateContext(display, config, nullptr, contextAttribs);
 
     // get some window metrics
@@ -100,9 +105,27 @@ void rndr::Renderer::prepare_graphics() {
     aout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
     aout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
 
-    shader_ = std::unique_ptr<ndk_helper::shdr::Shader>(asset_manager_->load_shader("shader/cube.vert", "shader/cube.frag"));
-    outlined_ = std::unique_ptr<ndk_helper::shdr::Shader>(asset_manager_->load_shader("shader/cube.vert", "shader/outlined.frag"));
-    screenShader_ = std::unique_ptr<ndk_helper::shdr::Shader>(asset_manager_->load_shader("shader/framebuffer_screen.vert", "shader/framebuffer_screen.frag"));
+    shader_ = std::unique_ptr<ndk_helper::shdr::Shader>(
+        asset_manager_->load_shader(
+            "shader/cube.vert",
+            "shader/cube.frag",
+            ""
+        )
+    );
+    outlined_ = std::unique_ptr<ndk_helper::shdr::Shader>(
+        asset_manager_->load_shader(
+            "shader/cube.vert",
+            "shader/outlined.frag",
+            ""
+        )
+    );
+    normalShader_ = std::unique_ptr<ndk_helper::shdr::Shader>(
+        asset_manager_->load_shader(
+            "shader/normalVisualization.vert",
+            "shader/normalVisualization.frag",
+            "shader/normalVisualization.geom"
+        )
+    );
 
     time_manager_->reset();
 }
@@ -289,6 +312,10 @@ void rndr::Renderer::render() {
         ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
         ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
         ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});i->draw(*shader_);
+
+        normalShader_->activate();
+        ndk_helper::shdr::set_mat4(normalShader_.get(), "MODEL_VIEW", modelView);
+        i->draw(*normalShader_);
 
         if (outlineEnabled) {
             float scaled = 1.05f;
