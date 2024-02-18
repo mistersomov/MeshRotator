@@ -415,7 +415,7 @@ void rndr::Renderer::destroy_framebuffer() {
 void rndr::Renderer::create_shaders() {
     shader_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-                assetManager_->load_shader(
+            assetManager_->load_shader(
                 "shader/cube.vert",
                 "shader/cube.frag",
                 ""
@@ -423,7 +423,7 @@ void rndr::Renderer::create_shaders() {
     );
     outlined_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-                assetManager_->load_shader(
+            assetManager_->load_shader(
                 "shader/cube.vert",
                 "shader/outlined.frag",
                 ""
@@ -431,7 +431,7 @@ void rndr::Renderer::create_shaders() {
     );
     normalVectorShader_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-                assetManager_->load_shader(
+            assetManager_->load_shader(
                 "shader/normalVisualization.vert",
                 "shader/normalVisualization.frag",
                 "shader/normalVisualization.geom"
@@ -439,7 +439,7 @@ void rndr::Renderer::create_shaders() {
     );
     screenShader_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-                assetManager_->load_shader(
+            assetManager_->load_shader(
                 "shader/framebuffer_screen.vert",
                 "shader/framebuffer_screen.frag",
                 ""

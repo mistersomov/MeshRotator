@@ -29,9 +29,9 @@ struct DirLight {
 };
 
 in VS_OUT {
-    vec3 normal;
     vec3 fragPos;
     vec2 texCoords;
+    mat3 TBN;
 } fs_in;
 
 out vec4 color;
@@ -52,8 +52,9 @@ vec3 calc_point_light(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos)
 vec3 calc_dir_light(DirLight light, vec3 normal, vec3 viewDir);
 
 void main() {
-    vec3 normal = normalize(fs_in.normal);
-    vec3 viewDir = normalize(viewPos - fs_in.fragPos);
+    vec3 normal = texture(material.normal, fs_in.texCoords).rgb;
+    normal = normalize(normal * 2.0 - 1.0);
+    vec3 viewDir = fs_in.TBN * normalize(viewPos - fs_in.fragPos);
     vec3 result = calc_point_light(pointLight, normal, viewDir, fs_in.fragPos);
 
     result += calc_dir_light(dirLight, normal, viewDir);
@@ -69,7 +70,7 @@ float get_point_light_distance(PointLight light, vec3 pos) {
 }
 
 vec3 calc_point_light(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos) {
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightDir = fs_in.TBN * normalize(light.position - fragPos);
     // unit vector exactly halfway between the light direction and the view direction
     vec3 halfway = normalize(lightDir + viewDir);
     // diffuse shading
@@ -93,7 +94,7 @@ vec3 calc_point_light(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos)
 
 // calculates the color when using a directional light.
 vec3 calc_dir_light(DirLight light, vec3 normal, vec3 viewDir) {
-    vec3 lightDir = normalize(-light.direction);
+    vec3 lightDir = fs_in.TBN * normalize(-light.direction);
     // unit vector exactly halfway between the light direction and the view direction
     vec3 halfway = normalize(lightDir + viewDir);
     // diffuse shading
