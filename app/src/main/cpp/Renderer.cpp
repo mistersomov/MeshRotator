@@ -302,7 +302,7 @@ void rndr::Renderer::render() {
 
         ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.position", utils::get_light_dir());
         ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.diffuse", glm::vec3{0.5f, 0.5f, 0.5f});
+        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.diffuse", utils::get_light_color());
         ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
         ndk_helper::shdr::set_float(shader_.get(), "pointLight.constant", 1.0f);
         ndk_helper::shdr::set_float(shader_.get(), "pointLight.linear", 0.09f);
