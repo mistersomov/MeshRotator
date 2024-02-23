@@ -23,11 +23,11 @@ namespace utils {
     }
 
     glm::vec3 get_light_dir() {
-        return glm::vec3{0.0f, 1.0f, 2.0f};
+        return glm::vec3{0.0f, 1.0f, -2.0f};
     }
 
     glm::vec3 get_light_color() {
-        return glm::vec3{1.0f, 1.0f, 1.0f};
+        return glm::vec3{0.5f, 0.5f, 0.5f};
     }
 
     float get_aspect_ratio(const float width, const float height) {
