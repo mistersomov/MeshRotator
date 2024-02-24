@@ -11,7 +11,6 @@ namespace ndk_helper {
     namespace shdr {
         class Shader {
             GLuint programId_;
-            std::unordered_map<std::string, GLuint> uniforms_;
         public:
             Shader(GLuint) noexcept;
             ~Shader();
