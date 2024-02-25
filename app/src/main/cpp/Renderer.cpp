@@ -9,6 +9,18 @@ bool outlineEnabled;
 float xGlobal = 0.0f;
 float yGlobal = 0.0f;
 
+rndr::Renderer::Renderer(android_app *app): app_{app},
+                                            assetManager_{new assetmgr::AssetManager(app->activity->assetManager)},
+                                            timeManager_{new ndk_helper::timemgr::TimeManager()},
+                                            modelManager_{new mdlmgr::ModelManager(assetManager_.get())}
+{
+    prepare_graphics();
+    create_shaders();
+    modelManager_->load_model("model/pillar/pillarsSF.obj");
+    create_matrix_uniform_buffer();
+    create_framebuffer();
+};
+
 rndr::Renderer::~Renderer() {
     destroy_framebuffer();
     if (display_ != EGL_NO_DISPLAY) {
@@ -25,9 +37,10 @@ rndr::Renderer::~Renderer() {
 }
 
 void rndr::Renderer::render() {
-    time_manager_->update_time();
+    timeManager_->update_time();
+    auto models = modelManager_->get_models();
 
-    for (auto i = models_.begin(), end = models_.end(); i != end; ++i) {
+    for (auto i = models.begin(), end = models.end(); i != end; ++i) {
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -36,9 +49,10 @@ void rndr::Renderer::render() {
             glm::translate(glm::mat4(1.0f), glm::vec3{xGlobal, yGlobal, -5.0f})
                 * glm::rotate(
                     glm::mat4(1.0f),
-                    glm::radians(time_manager_->delta() * (-50.0f)),
-                    glm::vec3{0.2f, 0.3f, 0.0f}
-                );
+                    glm::radians(timeManager_->delta() * (-50.0f)),
+                    glm::vec3{0.0f, 1.0f, 0.0f}
+                )
+                * glm::scale(glm::mat4(1.0f), glm::vec3{0.48f, 0.48f, 0.48f});
         shader_->activate();
         ndk_helper::shdr::set_mat4(shader_.get(), "MODEL_VIEW", modelView);
         ndk_helper::shdr::set_vec3(shader_.get(), "viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
@@ -58,12 +72,12 @@ void rndr::Renderer::render() {
         ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
         ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});i->draw(*shader_);
 
-        normalVectorShader_->activate();
-        ndk_helper::shdr::set_mat4(normalVectorShader_.get(), "MODEL_VIEW", modelView);
-        i->draw(*normalVectorShader_);
-
         if (outlineEnabled) {
-            float scaled = 1.05f;
+            normalVectorShader_->activate();
+            ndk_helper::shdr::set_mat4(normalVectorShader_.get(), "MODEL_VIEW", modelView);
+            i->draw(*normalVectorShader_);
+
+            float scaled = 0.5f;
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
             glDisable(GL_DEPTH_TEST);
@@ -72,13 +86,13 @@ void rndr::Renderer::render() {
                 glm::translate(glm::mat4(1.0f), glm::vec3{xGlobal, yGlobal, -5.0f})
                 * glm::rotate(
                     glm::mat4(1.0f),
-                    glm::radians(time_manager_->delta() * (-50.0f)),
-                    glm::vec3{0.2f, 0.3f, 0.0f}
+                    glm::radians(timeManager_->delta() * (-50.0f)),
+                    glm::vec3{0.0f, 1.0f, 0.0f}
                 )
                 * glm::scale(glm::mat4(1.0f), glm::vec3{scaled, scaled, scaled});
             ndk_helper::shdr::set_mat4(outlined_.get(), "MODEL_VIEW", modelView);
             ndk_helper::shdr::set_vec3(outlined_.get(), "viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
-            ndk_helper::shdr::set_float(outlined_.get(), "uTime", time_manager_->delta());
+            ndk_helper::shdr::set_float(outlined_.get(), "uTime", timeManager_->delta());
             i->draw(*outlined_);
             glEnable(GL_DEPTH_TEST);
             glStencilMask(0xFF);
@@ -252,71 +266,7 @@ void rndr::Renderer::prepare_graphics() {
     aout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
     aout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
 
-    // create shaders
-    create_shaders();
-
-    time_manager_->reset();
-}
-
-void rndr::Renderer::create_model() {
-    std::vector<GLfloat> cubeVertices {
-        // positions          // normals           // diffuse_color
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f, // 0 bottom back left
-        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f, // 1 bottom back right
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f, // 2 top back right
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f, // 3 top back left
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f, // 4 bottom front left
-        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f, // 5 bottom front right
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f, // 6 top front right
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f, // 7 top front left
-
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // 8 left side left bottom
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // 9 left side right bottom
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // 10 left side right top
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // 11 left side left top
-
-        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // 12 right side left bottom
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // 13 right side right bottom
-        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // 14 right side right top
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // 15 right side left top
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f, //16  bottom back left
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f, // 17 bottom front left
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f, // 18 bottom front right
-        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f, // 19 bottom back right
-
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, // 20 top front left
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f, // 21 top front right
-        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f, // 22 top back right
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f, // 23 top back left
-    };
-    std::vector<GLushort> cubeIndices {
-        0, 1, 3,
-        2, 3, 1,
-
-        4, 5, 7,
-        6, 7, 5,
-
-        8, 9, 11,
-        10, 11, 9,
-
-        12, 13, 15,
-        14, 15, 13,
-
-        16, 17, 18,
-        16, 18, 19,
-
-        20, 21, 23,
-        22, 23, 21
-    };
-    std::vector<ndk_helper::mesh::Texture> textures;
-    auto diffuseTexture = asset_manager_->load_texture("model/container.png", "diffuse");
-    auto specularTexture = asset_manager_->load_texture("model/container_specular.png", "specular");
-    textures.push_back(*diffuseTexture.get());
-    textures.push_back(*specularTexture.get());
-
-    models_.emplace_back(ndk_helper::mdl::Model{cubeVertices, cubeIndices, textures});
+    timeManager_->reset();
 }
 
 void rndr::Renderer::create_matrix_uniform_buffer() {
@@ -465,7 +415,7 @@ void rndr::Renderer::destroy_framebuffer() {
 void rndr::Renderer::create_shaders() {
     shader_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-            asset_manager_->load_shader(
+                assetManager_->load_shader(
                 "shader/cube.vert",
                 "shader/cube.frag",
                 ""
@@ -473,7 +423,7 @@ void rndr::Renderer::create_shaders() {
     );
     outlined_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-            asset_manager_->load_shader(
+                assetManager_->load_shader(
                 "shader/cube.vert",
                 "shader/outlined.frag",
                 ""
@@ -481,7 +431,7 @@ void rndr::Renderer::create_shaders() {
     );
     normalVectorShader_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-            asset_manager_->load_shader(
+                assetManager_->load_shader(
                 "shader/normalVisualization.vert",
                 "shader/normalVisualization.frag",
                 "shader/normalVisualization.geom"
@@ -489,7 +439,7 @@ void rndr::Renderer::create_shaders() {
     );
     screenShader_ =
         std::unique_ptr<ndk_helper::shdr::Shader>(
-            asset_manager_->load_shader(
+                assetManager_->load_shader(
                 "shader/framebuffer_screen.vert",
                 "shader/framebuffer_screen.frag",
                 ""

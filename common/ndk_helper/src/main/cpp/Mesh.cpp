@@ -66,23 +66,32 @@ void ndk_helper::mesh::Mesh::prepare() {
         sizeof(Vertex),
         (void*)offsetof(Vertex, texCoord)
     );
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(
+        3,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        (void*)offsetof(Vertex, tangent)
+    );
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(
+        4,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        (void*)offsetof(Vertex, bitangent)
+    );
 
     glBindVertexArray(0);
 }
 
 void ndk_helper::mesh::Mesh::draw(ndk_helper::shdr::Shader* shader) const {
-    unsigned int diffuseNr{0};
-    unsigned int specularNr{0};
-
     for (auto i = 0; i != textures_.size(); ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         std::string name = textures_[i].type;
-        std::string number;
-        if (name == "diffuse") {
-            number = std::to_string(diffuseNr++);
-        } else if (name == "specular") {
-            number = std::to_string(specularNr++);
-        }
         ndk_helper::shdr::set_int(shader, "material." + name, i);
         glBindTexture(GL_TEXTURE_2D, textures_[i].id);
     }

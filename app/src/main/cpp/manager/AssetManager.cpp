@@ -193,43 +193,16 @@ std::shared_ptr<ndk_helper::mesh::Texture> assetmgr::AssetManager::load_texture(
     return std::shared_ptr<ndk_helper::mesh::Texture>(texture);
 }
 
-std::vector<aiMesh*> assetmgr::AssetManager::load_mesh(const std::string& path) {
-    std::vector<aiMesh*> meshes;
-    auto modelAsset = AAssetManager_open(assetManager_, path.c_str(), AASSET_MODE_BUFFER);
-
-    if (modelAsset) {
-        size_t length = AAsset_getLength(modelAsset);
-
-        Assimp::Importer importer;
-        auto scene = importer.ReadFileFromMemory(
-            AAsset_getBuffer(modelAsset),
-            length,
-            aiProcess_Triangulate | aiProcess_FlipUVs
-        );
-
-        AAsset_close(modelAsset);
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            aout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-            throw importer.GetException();
-        }
-        process_node(meshes, scene->mRootNode, scene);
-    } else {
-        throw std::ios_base::failure("Failed to open scene: " + path);
+const std::string assetmgr::AssetManager::load_model(const std::string& path) const {
+    auto asset = AAssetManager_open(assetManager_, path.c_str(), AASSET_MODE_BUFFER);
+    if (!asset) {
+        aout << "Failed to load asset: " << path << std::endl;
+        return nullptr;
     }
+    std::string buffer;
+    buffer.resize(AAsset_getLength(asset));
+    AAsset_read(asset, &buffer[0], AAsset_getLength(asset));
+    AAsset_close(asset);
 
-    return meshes;
-}
-
-void assetmgr::AssetManager::process_node(
-    std::vector<aiMesh*>& meshes,
-    aiNode* node,
-    const aiScene* scene
-) {
-    for (auto i = 0; i != node->mNumMeshes; i++) {
-        auto mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(mesh);
-    }
-    for(auto i = 0; i != node->mNumChildren; i++) {
-        process_node(meshes, node->mChildren[i], scene);
-    }
+    return buffer;
 }

@@ -3,6 +3,7 @@
 
 #include "NDKHelper.hpp"
 #include "manager/AssetManager.hpp"
+#include "manager/ModelManager.hpp"
 #include "utils/AndroidOut.h"
 
 #include <EGL/egl.h>
@@ -11,8 +12,9 @@
 namespace rndr {
     class Renderer {
         std::unique_ptr<android_app> app_;
-        std::unique_ptr<assetmgr::AssetManager> asset_manager_;
-        std::unique_ptr<ndk_helper::timemgr::TimeManager> time_manager_;
+        std::unique_ptr<assetmgr::AssetManager> assetManager_;
+        std::unique_ptr<ndk_helper::timemgr::TimeManager> timeManager_;
+        std::unique_ptr<mdlmgr::ModelManager> modelManager_;
 
         EGLDisplay display_{EGL_NO_DISPLAY};
         EGLSurface surface_{EGL_NO_SURFACE};
@@ -32,7 +34,6 @@ namespace rndr {
         GLuint framebufferVAO_{0}, framebufferVBO_{0};
 
         void prepare_graphics();
-        void create_model();
         void create_matrix_uniform_buffer();
         void create_shaders();
         void create_framebuffer();
@@ -40,17 +41,7 @@ namespace rndr {
         void render_framebuffer();
         void destroy_framebuffer();
     public:
-        inline Renderer(
-            android_app *app
-        ) : app_{app},
-            asset_manager_{new assetmgr::AssetManager(app->activity->assetManager)},
-            time_manager_{new ndk_helper::timemgr::TimeManager()}
-        {
-            prepare_graphics();
-            create_model();
-            create_matrix_uniform_buffer();
-            create_framebuffer();
-        };
+        Renderer(android_app *app);
         ~Renderer();
 
         void render();

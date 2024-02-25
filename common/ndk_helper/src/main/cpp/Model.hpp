@@ -10,11 +10,9 @@
 namespace ndk_helper {
     namespace mdl {
         class Model {
-            std::vector<ndk_helper::mesh::Mesh> meshes_;
-
-            void process_mesh(aiMesh*);
         public:
-            Model(const std::vector<aiMesh*>&);
+            Model(ndk_helper::mesh::Mesh);
+            Model(std::vector<ndk_helper::mesh::Mesh>);
             Model(const std::vector<GLfloat>&, const std::vector<uint16_t>&);
             Model(
                 const std::vector<GLfloat>&,
@@ -24,6 +22,11 @@ namespace ndk_helper {
 
             void draw(shdr::Shader&) const;
 
+        private:
+            std::vector<mesh::Mesh> meshes_;
+            std::vector<mesh::Texture> textures_;
+
+            void process_mesh(aiMesh*);
         };
     }
 }

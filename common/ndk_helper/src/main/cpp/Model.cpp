@@ -6,12 +6,11 @@
 #include <assimp/postprocess.h>
 #include <string>
 
-ndk_helper::mdl::Model::Model(const std::vector<aiMesh*>& meshes) {
-//    for(auto mesh : meshes) {
-//        process_mesh(mesh);
-//    }
-    process_mesh(meshes[0]);
+ndk_helper::mdl::Model::Model(ndk_helper::mesh::Mesh mesh) {
+    meshes_.push_back(mesh);
 }
+
+ndk_helper::mdl::Model::Model(std::vector<mesh::Mesh> meshes) : meshes_{meshes} {}
 
 ndk_helper::mdl::Model::Model(const std::vector<GLfloat>& vertices, const std::vector<uint16_t>& indices) {
     std::vector<ndk_helper::mesh::Vertex> meshVertices;
@@ -23,7 +22,7 @@ ndk_helper::mdl::Model::Model(const std::vector<GLfloat>& vertices, const std::v
         vert.texCoord = glm::vec2(vertices[i + 6], vertices[i + 7]);
         meshVertices.push_back(vert);
     }
-    meshes_.push_back(ndk_helper::mesh::Mesh(meshVertices, indices));
+    meshes_.emplace_back(ndk_helper::mesh::Mesh(meshVertices, indices));
 }
 
 ndk_helper::mdl::Model::Model(
@@ -75,19 +74,19 @@ void ndk_helper::mdl::Model::process_mesh(aiMesh* mesh) {
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.texCoord = vec;
             // tangent
-//            if (mesh->mTangents) {
-//                vector.x = mesh->mTangents[i].x;
-//                vector.y = mesh->mTangents[i].y;
-//                vector.z = mesh->mTangents[i].z;
-//                vertex.tangent = vector;
-//            }
-//            // bitangent
-//            if (mesh->mBitangents) {
-//                vector.x = mesh->mBitangents[i].x;
-//                vector.y = mesh->mBitangents[i].y;
-//                vector.z = mesh->mBitangents[i].z;
-//                vertex.bitangent = vector;
-//            }
+            if (mesh->mTangents) {
+                vector.x = mesh->mTangents[i].x;
+                vector.y = mesh->mTangents[i].y;
+                vector.z = mesh->mTangents[i].z;
+                vertex.tangent = vector;
+            }
+            // bitangent
+            if (mesh->mBitangents) {
+                vector.x = mesh->mBitangents[i].x;
+                vector.y = mesh->mBitangents[i].y;
+                vector.z = mesh->mBitangents[i].z;
+                vertex.bitangent = vector;
+            }
         } else {
             vertex.texCoord = glm::vec2(0.0f, 0.0f);
         }
