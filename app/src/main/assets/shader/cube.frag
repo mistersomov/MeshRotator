@@ -5,6 +5,7 @@ precision mediump float;
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
+    sampler2D normal;
 };
 
 struct PointLight {
@@ -43,7 +44,7 @@ uniform DirLight dirLight;
 
 const float pi = 3.14159265;
 const float shininess = 16.0;
-const float energyConservation = ( 8.0 + shininess ) / ( 8.0 * pi );
+const float energyConservation = (8.0 + shininess) / (8.0 * pi);
 
 float get_attenuation(PointLight light, float distance);
 float get_point_light_distance(PointLight light, vec3 pos);

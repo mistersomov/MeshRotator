@@ -4,17 +4,10 @@
 #include "NDKHelper.hpp"
 
 #include <android/asset_manager.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <memory>
 
 namespace assetmgr {
     class AssetManager {
-        AAssetManager* assetManager_;
-
-        GLuint loadShader(GLenum, const std::string&);
-        void process_node(std::vector<aiMesh*>&, aiNode*, const aiScene*);
     public:
         AssetManager(AAssetManager* assetManager);
         ~AssetManager();
@@ -24,8 +17,15 @@ namespace assetmgr {
             const std::string&,
             const std::string&
         );
-        std::shared_ptr<ndk_helper::mesh::Texture> load_texture(const std::string&, const std::string&);
-        std::vector<aiMesh*> load_mesh(const std::string&);
+        std::shared_ptr<ndk_helper::mesh::Texture> load_texture(
+            const std::string&,
+            const std::string&
+        );
+        const std::string load_model(const std::string&) const;
+    private:
+        AAssetManager* assetManager_;
+
+        GLuint loadShader(GLenum, const std::string&);
     };
 }
 
