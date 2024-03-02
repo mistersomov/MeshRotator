@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "259468501942",
+    "project_id": "meshrotator",
+    "storage_bucket": "meshrotator.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259468501942:android:53e1010ec1d6ee4a17d717",
+        "android_client_info": {
+          "package_name": "com.mistersomov.meshrotator"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT_LdhAJBb7CWePA4t9THMyFRJD1y0rKI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259468501942:android:d607c0fffb20143017d717",
+        "android_client_info": {
+          "package_name": "com.mistersomov.meshrotator.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT_LdhAJBb7CWePA4t9THMyFRJD1y0rKI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
