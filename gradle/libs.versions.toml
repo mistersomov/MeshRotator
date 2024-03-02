@@ -47,7 +47,7 @@ material3 = { group = "androidx.compose.material3", name = "material3" }
 
 #Analytics/Crashlytics
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
-firebaseCrashlyticsKtx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebaseCrashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 firebaseCrashlyticsNdk = { group = "com.google.firebase", name = "firebase-crashlytics-ndk" }
 firebase-crashlytics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
 
