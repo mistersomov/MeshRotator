@@ -93,7 +93,8 @@ dependencies {
     //implementation(libs.material3)
 
     // analytics
-    implementation(libs.firebaseCrashlyticsKtx)
+    api(platform(libs.firebase.bom))
+    implementation(libs.firebaseCrashlytics)
     implementation(libs.firebaseCrashlyticsNdk)
 
     testImplementation(libs.junit)
