@@ -32,5 +32,13 @@ gradlePlugin {
             id = "com.mistersomov.library.compose"
             implementationClass = "AndroidLibraryComposeConventionPlugin"
         }
+        register("api") {
+            id = "com.mistersomov.api"
+            implementationClass = "AndroidApiConventionPlugin"
+        }
+        register("core") {
+            id = "com.mistersomov.core"
+            implementationClass = "AndroidCoreConventionPlugin"
+        }
     }
 }
