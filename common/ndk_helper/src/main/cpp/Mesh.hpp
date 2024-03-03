@@ -19,7 +19,6 @@ namespace ndk_helper {
         struct Texture {
             uint32_t id;
             std::string type;
-            std::string path;
         };
 
         class Mesh {

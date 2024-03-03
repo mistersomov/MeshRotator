@@ -1,7 +1,6 @@
 #ifndef MESH_ROTATOR_MODELMANAGER_HPP
 #define MESH_ROTATOR_MODELMANAGER_HPP
 
-#include "AssetManager.hpp"
 #include "NDKHelper.hpp"
 
 #include <assimp/Importer.hpp>
@@ -11,13 +10,13 @@
 namespace mdlmgr {
     class ModelManager {
     public:
-        ModelManager(assetmgr::AssetManager* assetManager);
+        ModelManager(ndk_helper::assetmgr::AssetManager& assetManager);
 
         void load_model(const std::string&);
         std::vector<ndk_helper::mdl::Model> get_models() const;
 
     private:
-        std::unique_ptr<assetmgr::AssetManager> asset_manager_;
+        std::unique_ptr<ndk_helper::assetmgr::AssetManager> assetManager_;
         std::vector<ndk_helper::mdl::Model> models_;
 
         void process_node(aiNode*, const aiScene*);

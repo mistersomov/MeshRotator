@@ -10,9 +10,9 @@ float xGlobal = 0.0f;
 float yGlobal = 0.0f;
 
 rndr::Renderer::Renderer(android_app *app): app_{app},
-                                            assetManager_{new assetmgr::AssetManager(app->activity->assetManager)},
+                                            assetManager_{new ndk_helper::assetmgr::AssetManager(app->activity->assetManager)},
                                             timeManager_{new ndk_helper::timemgr::TimeManager()},
-                                            modelManager_{new mdlmgr::ModelManager(assetManager_.get())}
+                                            modelManager_{new mdlmgr::ModelManager(*assetManager_)}
 {
     prepare_graphics();
     create_shaders();
@@ -413,36 +413,28 @@ void rndr::Renderer::destroy_framebuffer() {
 }
 
 void rndr::Renderer::create_shaders() {
-    shader_ =
-        std::unique_ptr<ndk_helper::shdr::Shader>(
-            assetManager_->load_shader(
-                "shader/cube.vert",
-                "shader/cube.frag",
-                ""
-            )
-    );
-    outlined_ =
-        std::unique_ptr<ndk_helper::shdr::Shader>(
-            assetManager_->load_shader(
-                "shader/cube.vert",
-                "shader/outlined.frag",
-                ""
-            )
-    );
-    normalVectorShader_ =
-        std::unique_ptr<ndk_helper::shdr::Shader>(
-            assetManager_->load_shader(
-                "shader/normalVisualization.vert",
-                "shader/normalVisualization.frag",
-                "shader/normalVisualization.geom"
-            )
-    );
-    screenShader_ =
-        std::unique_ptr<ndk_helper::shdr::Shader>(
-            assetManager_->load_shader(
-                "shader/framebuffer_screen.vert",
-                "shader/framebuffer_screen.frag",
-                ""
-            )
-    );
+    GLuint programId1 = glCreateProgram();
+    glAttachShader(programId1, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/cube.vert"));
+    glAttachShader(programId1, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/cube.frag"));
+    glLinkProgram(programId1);
+    shader_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId1));
+
+    GLuint programId2 = glCreateProgram();
+    glAttachShader(programId2, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/cube.vert"));
+    glAttachShader(programId2, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/outlined.frag"));
+    glLinkProgram(programId2);
+    outlined_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId2));
+
+    GLuint programId3 = glCreateProgram();
+    glAttachShader(programId3, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/normalVisualization.vert"));
+    glAttachShader(programId3, assetManager_->loadShader(GL_GEOMETRY_SHADER, "shader/normalVisualization.geom"));
+    glAttachShader(programId3, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/normalVisualization.frag"));
+    glLinkProgram(programId3);
+    normalVectorShader_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId3));
+
+    GLuint programId4 = glCreateProgram();
+    glAttachShader(programId4, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/framebuffer_screen.vert"));
+    glAttachShader(programId4, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/framebuffer_screen.frag"));
+    glLinkProgram(programId4);
+    screenShader_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId4));
 }

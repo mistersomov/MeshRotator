@@ -23,6 +23,7 @@ IF(NOT TARGET ndk_helper)
     set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${ANDROID_ABI}/bin/libassimp.so)
 
     add_library(ndk_helper STATIC
+        src/main/cpp/manager/AssetManager.cpp
         src/main/cpp/manager/TimeManager.cpp
         src/main/cpp/Model.cpp
         src/main/cpp/Mesh.cpp
