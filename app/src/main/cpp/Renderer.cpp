@@ -54,27 +54,27 @@ void rndr::Renderer::render() {
                 )
                 * glm::scale(glm::mat4(1.0f), glm::vec3{0.48f, 0.48f, 0.48f});
         shader_->activate();
-        ndk_helper::shdr::set_mat4(shader_.get(), "MODEL_VIEW", modelView);
-        ndk_helper::shdr::set_vec3(shader_.get(), "viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
+        shader_->set_mat4("MODEL_VIEW", modelView);
+        shader_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
 
-        ndk_helper::shdr::set_float(shader_.get(), "material.shininess", 64.0f);
+        shader_->set_float("material.shininess", 64.0f);
 
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.position", utils::get_light_dir());
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.diffuse", utils::get_light_color());
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
-        ndk_helper::shdr::set_float(shader_.get(), "pointLight.constant", 1.0f);
-        ndk_helper::shdr::set_float(shader_.get(), "pointLight.linear", 0.09f);
-        ndk_helper::shdr::set_float(shader_.get(), "pointLight.quadratic", 0.032f);
+        shader_->set_vec3("pointLight.position", utils::get_light_dir());
+        shader_->set_vec3("pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
+        shader_->set_vec3("pointLight.diffuse", utils::get_light_color());
+        shader_->set_vec3("pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
+        shader_->set_float("pointLight.constant", 1.0f);
+        shader_->set_float("pointLight.linear", 0.09f);
+        shader_->set_float("pointLight.quadratic", 0.032f);
 
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.direction", glm::vec3{-0.2f, -1.0f, -0.3f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});i->draw(*shader_);
+        shader_->set_vec3("dirLight.direction", glm::vec3{-0.2f, -1.0f, -0.3f});
+        shader_->set_vec3("dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
+        shader_->set_vec3("dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
+        shader_->set_vec3("dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});i->draw(*shader_);
 
         if (outlineEnabled) {
             normalVectorShader_->activate();
-            ndk_helper::shdr::set_mat4(normalVectorShader_.get(), "MODEL_VIEW", modelView);
+            normalVectorShader_->set_mat4("MODEL_VIEW", modelView);
             i->draw(*normalVectorShader_);
 
             float scaled = 0.5f;
@@ -90,9 +90,9 @@ void rndr::Renderer::render() {
                     glm::vec3{0.0f, 1.0f, 0.0f}
                 )
                 * glm::scale(glm::mat4(1.0f), glm::vec3{scaled, scaled, scaled});
-            ndk_helper::shdr::set_mat4(outlined_.get(), "MODEL_VIEW", modelView);
-            ndk_helper::shdr::set_vec3(outlined_.get(), "viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
-            ndk_helper::shdr::set_float(outlined_.get(), "uTime", timeManager_->delta());
+            outlined_->set_mat4("MODEL_VIEW", modelView);
+            outlined_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
+            outlined_->set_float("uTime", timeManager_->delta());
             i->draw(*outlined_);
             glEnable(GL_DEPTH_TEST);
             glStencilMask(0xFF);
@@ -272,8 +272,8 @@ void rndr::Renderer::prepare_graphics() {
 void rndr::Renderer::create_matrix_uniform_buffer() {
     GLuint uboMatrices;
     unsigned int uniformBlockIndex =
-            glGetUniformBlockIndex(shader_->get_id(), "Matrices");
-    glUniformBlockBinding(shader_->get_id(), uniformBlockIndex, 0);
+            glGetUniformBlockIndex(shader_->id_, "Matrices");
+    glUniformBlockBinding(shader_->id_, uniformBlockIndex, 0);
 
     size_t bufferSize = 2 * sizeof(glm::mat4);
     glGenBuffers(1, &uboMatrices);
@@ -377,7 +377,7 @@ void rndr::Renderer::create_framebuffer() {
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     screenShader_->activate();
-    ndk_helper::shdr::set_int(screenShader_.get(), "screenTexture", 0);
+    screenShader_->set_int("screenTexture", 0);
 }
 
 void rndr::Renderer::create_renderbuffer() {

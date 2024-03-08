@@ -92,7 +92,7 @@ void ndk_helper::mesh::Mesh::draw(ndk_helper::shdr::Shader* shader) const {
     for (auto i = 0; i != textures_.size(); ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         std::string name = textures_[i].type;
-        ndk_helper::shdr::set_int(shader, "material." + name, i);
+        shader->set_int("material." + name, i);
         glBindTexture(GL_TEXTURE_2D, textures_[i].id);
     }
 
