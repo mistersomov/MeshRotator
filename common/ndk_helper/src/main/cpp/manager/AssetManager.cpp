@@ -22,6 +22,7 @@ const GLuint ndk_helper::assetmgr::AssetManager::loadShader(
         }
     } catch(std::exception& e) {
         aout << e.what() << std::endl;
+
         return 0;
     }
 }
@@ -31,6 +32,7 @@ const GLuint ndk_helper::assetmgr::AssetManager::createShaderByType(const GLenum
     if (!shader) {
         throw std::runtime_error("Failed to create shader: " + std::to_string(type));
     }
+
     return shader;
 }
 
@@ -86,8 +88,9 @@ const ndk_helper::mesh::Texture ndk_helper::assetmgr::AssetManager::loadTexture(
         return {textureID, type};
     } catch (std::exception& e) {
         aout << e.what() << std::endl;
+
+        return {0, ""};
     }
-    return {0, ""};
 }
 
 const GLuint
@@ -176,6 +179,7 @@ const std::string ndk_helper::assetmgr::AssetManager::loadModel(const std::strin
         return readAssetFromPath(path);
     } catch (std::exception& e) {
         aout << e.what() << std::endl;
+
         return std::string();
     }
 }
