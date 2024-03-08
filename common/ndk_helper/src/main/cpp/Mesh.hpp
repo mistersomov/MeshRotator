@@ -14,11 +14,24 @@ namespace ndk_helper {
             glm::vec2 texCoord;
             glm::vec3 tangent;
             glm::vec3 bitangent;
+
+            bool operator==(const mesh::Vertex& other) const {
+                return position == other.position
+                    && normal == other.normal
+                    && texCoord == other.texCoord
+                    && tangent == other.tangent
+                    && bitangent == other.bitangent;
+            };
         };
 
         struct Texture {
             uint32_t id;
             std::string type;
+
+            bool operator==(const mesh::Texture& other) const {
+                return id == other.id
+                    && type == other.type;
+            };
         };
 
         class Mesh {
@@ -35,6 +48,8 @@ namespace ndk_helper {
         public:
             Mesh(std::vector<mesh::Vertex>, std::vector<uint16_t>);
             Mesh(std::vector<mesh::Vertex>, std::vector<uint16_t>, std::vector<Texture>);
+
+            bool operator==(const mesh::Mesh& other) const;
 
             void draw(ndk_helper::shdr::Shader*) const;
         };

@@ -27,9 +27,8 @@ link_directories(${ASSIMP_LIBRARY_DIRS})
 set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${ANDROID_ABI}/bin/libassimp.so)
 
 #tests
-set(TESTS_DIR ${CMAKE_ANDROID_NDK}/sources/third_party/googletest)
-add_library(gtest STATIC IMPORTED)
-include_directories(${TESTS_DIR}/include)
+find_package(googletest REQUIRED CONFIG)
+find_package(junit-gtest REQUIRED CONFIG)
 
 add_library(meshrotator SHARED
     src/main/cpp/manager/ModelManager.cpp
@@ -39,16 +38,23 @@ add_library(meshrotator SHARED
 )
 target_include_directories(meshrotator PRIVATE
     ${ndk_helper_SOURCE_DIR}/src/main/cpp
-    ${TESTS_DIR}
 )
 target_link_libraries(meshrotator
     ndk_helper
+
     #assimp
     assimp
+
     #glm
     glm
+
     # The game activity
     game-activity::game-activity_static
+
+    #tests
+    googletest::gtest
+    junit-gtest::junit-gtest
+
     EGL
     GLESv3
     android

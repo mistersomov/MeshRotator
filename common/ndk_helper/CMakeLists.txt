@@ -24,38 +24,52 @@ IF(NOT TARGET ndk_helper)
     link_directories(${ASSIMP_LIBRARY_DIRS})
     set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${ANDROID_ABI}/bin/libassimp.so)
 
-    #tests
-    set(TESTS_DIR ${CMAKE_ANDROID_NDK}/sources/third_party/googletest)
-    add_library(gtest STATIC IMPORTED)
-    include_directories(${TESTS_DIR}/include)
-
     add_library(ndk_helper STATIC
         src/main/cpp/manager/AssetManager.cpp
         src/main/cpp/manager/TimeManager.cpp
-        src/main/cpp/Model.cpp
+        src/main/cpp/Model_Impl.cpp
         src/main/cpp/Mesh.cpp
         src/main/cpp/Shader.cpp
     )
-
-    target_include_directories(ndk_helper PRIVATE
-        ${NDK_HELPER_PATH}
-        #tests
-        ${TESTS_DIR}
-    )
-
     target_link_libraries(ndk_helper
         #assimp
         assimp
+
         #glm
         glm
+
         # The game activity
         game-activity::game-activity_static
+
+        #tests
+        googletest::gtest
+        junit-gtest::junit-gtest
+
         EGL
         GLESv3
     )
-
     set_target_properties(ndk_helper PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}"
     )
+
+    #tests
+    find_package(googletest REQUIRED CONFIG)
+    find_package(junit-gtest REQUIRED CONFIG)
+
+    add_library(native_tests SHARED
+        src/main/cpp/Mesh.cpp
+        src/main/cpp/Shader.cpp
+        src/main/cpp/Model_Impl.cpp
+        src/main/cpp/test/Model_ImplTest.cpp
+    )
+    target_link_libraries(native_tests PRIVATE
+        googletest::gmock
+        googletest::gtest
+        junit-gtest::junit-gtest
+        glm
+        EGL
+        GLESv3
+    )
+
 ENDIF (NOT TARGET ndk_helper)

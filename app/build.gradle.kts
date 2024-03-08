@@ -97,6 +97,9 @@ dependencies {
     implementation(libs.firebaseCrashlytics)
     implementation(libs.firebaseCrashlyticsNdk)
 
+    // tests
+    implementation(libs.androidx.junit.gtest)
+    implementation(libs.googletest)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.espresso)

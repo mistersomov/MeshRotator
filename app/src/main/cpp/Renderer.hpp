@@ -22,8 +22,6 @@ namespace rndr {
         EGLint width_{0};
         EGLint height_{0};
 
-        std::vector<ndk_helper::mdl::Model> models_;
-
         std::unique_ptr<ndk_helper::shdr::Shader> shader_;
         std::unique_ptr<ndk_helper::shdr::Shader> outlined_;
         std::unique_ptr<ndk_helper::shdr::Shader> normalVectorShader_;
