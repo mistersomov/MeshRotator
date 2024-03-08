@@ -1,36 +1,30 @@
 #include "Shader.hpp"
 
-ndk_helper::shdr::Shader::Shader(GLuint id) noexcept : programId_{id} {}
-
-ndk_helper::shdr::Shader::~Shader() {}
+ndk_helper::shdr::Shader::Shader(GLuint id) noexcept : id_{id} {}
 
 void ndk_helper::shdr::Shader::activate() const {
-    glUseProgram(programId_);
+    glUseProgram(id_);
 }
 
-GLuint ndk_helper::shdr::Shader::get_id() const {
-    return programId_;
+void ndk_helper::shdr::Shader::set_int(const std::string& name, int value) const {
+    glUniform1i(glGetUniformLocation(id_, name.c_str()), value);
 }
 
-void ndk_helper::shdr::set_int(shdr::Shader* program, const std::string& name, int value) {
-    glUniform1i(glGetUniformLocation(program->get_id(), name.c_str()), value);
+void ndk_helper::shdr::Shader::set_float(const std::string& name, float value) const {
+    glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
 }
 
-void ndk_helper::shdr::set_float(shdr::Shader* program, const std::string& name, float value) {
-    glUniform1f(glGetUniformLocation(program->get_id(), name.c_str()), value);
-}
-
-void ndk_helper::shdr::set_vec3(shdr::Shader* program, const std::string& name, const glm::vec3 value) {
+void ndk_helper::shdr::Shader::set_vec3(const std::string& name, const glm::vec3 value) const {
     glUniform3fv(
-        glGetUniformLocation(program->get_id(),name.c_str()),
+        glGetUniformLocation(id_,name.c_str()),
         1,
         glm::value_ptr(value)
     );
 }
 
-void ndk_helper::shdr::set_mat4(shdr::Shader* program, const std::string& name, const glm::mat4 value) {
+void ndk_helper::shdr::Shader::set_mat4(const std::string& name, const glm::mat4 value) const {
     glUniformMatrix4fv(
-        glGetUniformLocation(program->get_id(),name.c_str()),
+        glGetUniformLocation(id_,name.c_str()),
         1,
         GL_FALSE,
         glm::value_ptr(value)
