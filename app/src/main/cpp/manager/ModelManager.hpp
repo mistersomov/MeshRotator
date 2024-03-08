@@ -12,11 +12,11 @@ namespace mdlmgr {
     public:
         ModelManager(ndk_helper::assetmgr::AssetManager& assetManager);
 
-        void load_model(const std::string&);
+        void loadModelFromPath(const std::string& path);
         std::vector<ndk_helper::mdl::Model> get_models() const;
 
     private:
-        std::unique_ptr<ndk_helper::assetmgr::AssetManager> assetManager_;
+        ndk_helper::assetmgr::AssetManager assetManager_;
         std::vector<ndk_helper::mdl::Model> models_;
 
         void process_node(aiNode*, const aiScene*);

@@ -11,9 +11,9 @@ void mdlmgr::ModelManager::loadModelFromPath(const std::string& path) {
     auto modelAsset = assetManager_.loadModel(path);
     Assimp::Importer importer;
     auto scene = importer.ReadFileFromMemory(
-        modelAsset.data(),
-        modelAsset.length(),
-        aiProcess_Triangulate
+            modelAsset.data(),
+            modelAsset.length(),
+            aiProcess_Triangulate
             | aiProcess_JoinIdenticalVertices
             | aiProcess_CalcTangentSpace
             | aiProcess_GenSmoothNormals
@@ -22,24 +22,24 @@ void mdlmgr::ModelManager::loadModelFromPath(const std::string& path) {
         aout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
         throw importer.GetException();
     }
-    processNode(scene->mRootNode, scene);
+    process_node(scene->mRootNode, scene);
 }
 
-std::vector<ndk_helper::mdl::Model> mdlmgr::ModelManager::getModels() const {
+std::vector<ndk_helper::mdl::Model> mdlmgr::ModelManager::get_models() const {
     return models_;
 }
 
-void mdlmgr::ModelManager::processNode(const aiNode* node, const aiScene* scene) {
+void mdlmgr::ModelManager::process_node(aiNode* node, const aiScene* scene) {
     for (auto i = 0; i != node->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[node->mMeshes[i]];
-        models_.push_back(process_mesh(mesh));
+        models_.push_back(process_mesh(mesh, scene));
     }
     for (auto i = 0; i != node->mNumChildren; ++i) {
-        processNode(node->mChildren[i], scene);
+        process_node(node->mChildren[i], scene);
     }
 }
 
-ndk_helper::mesh::Mesh mdlmgr::ModelManager::process_mesh(aiMesh* mesh) {
+ndk_helper::mesh::Mesh mdlmgr::ModelManager::process_mesh(aiMesh* mesh, const aiScene* scene) {
     std::vector<ndk_helper::mesh::Vertex> vertices;
     std::vector<uint16_t> indices;
 

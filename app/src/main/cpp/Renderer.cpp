@@ -16,7 +16,7 @@ rndr::Renderer::Renderer(android_app *app): app_{app},
 {
     prepare_graphics();
     create_shaders();
-    modelManager_->load_model("model/pillar/pillarsSF.obj");
+    modelManager_->loadModelFromPath("model/pillar/pillarsSF.obj");
     create_matrix_uniform_buffer();
     create_framebuffer();
 };
