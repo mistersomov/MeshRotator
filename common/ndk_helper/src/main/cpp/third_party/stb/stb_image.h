@@ -367,7 +367,7 @@ RECENT REVISION HISTORY:
 //    very big.
 
 #ifndef STBI_NO_STDIO
-#include "../../../../../../../../Library/Android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1/stdio.h"
+#include "stdio.h"
 #endif // STBI_NO_STDIO
 
 #define STBI_VERSION 1
@@ -382,7 +382,7 @@ enum
    STBI_rgb_alpha  = 4
 };
 
-#include "../../../../../../../../Library/Android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1/stdlib.h"
+#include "stdlib.h"
 typedef unsigned char stbi_uc;
 typedef unsigned short stbi_us;
 

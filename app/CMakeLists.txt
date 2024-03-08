@@ -25,7 +25,6 @@ set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${
 
 add_library(meshrotator SHARED
     src/main/cpp/manager/ModelManager.cpp
-    src/main/cpp/manager/AssetManager.cpp
     src/main/cpp/utils/AndroidOut.cpp
     src/main/cpp/Renderer.cpp
     src/main/cpp/main.cpp

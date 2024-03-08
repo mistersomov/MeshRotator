@@ -4,11 +4,11 @@
 #include <exception>
 
 mdlmgr::ModelManager::ModelManager(
-    assetmgr::AssetManager* assetManager
-) : asset_manager_{assetManager} {}
+    ndk_helper::assetmgr::AssetManager& assetManager
+) : assetManager_{assetManager} {}
 
-void mdlmgr::ModelManager::load_model(const std::string& path) {
-    auto modelAsset = asset_manager_->load_model(path);
+void mdlmgr::ModelManager::loadModelFromPath(const std::string& path) {
+    auto modelAsset = assetManager_.loadModel(path);
     Assimp::Importer importer;
     auto scene = importer.ReadFileFromMemory(
         modelAsset.data(),
@@ -84,7 +84,7 @@ ndk_helper::mesh::Mesh mdlmgr::ModelManager::process_mesh(aiMesh* mesh, const ai
     }
     for (auto i = 0; i != mesh->mNumFaces; ++i) {
         aiFace face = mesh->mFaces[i];
-        // retrieve all indices of the face and store them in the indices vector
+
         for (auto j = 0; j < face.mNumIndices; j++)
             indices.emplace_back(face.mIndices[j]);
     }
@@ -94,11 +94,12 @@ ndk_helper::mesh::Mesh mdlmgr::ModelManager::process_mesh(aiMesh* mesh, const ai
 
 std::vector<ndk_helper::mesh::Texture> mdlmgr::ModelManager::process_textures() {
     std::vector<ndk_helper::mesh::Texture> textures;
-    // diffuse map
-    auto diffuse = *asset_manager_->load_texture("model/pillar/pillar_1_BaseColor.png", "diffuse");
+    auto diffuse =
+            assetManager_.loadTexture("model/pillar/pillar_1_BaseColor.png", "diffuse");
     textures.emplace_back(diffuse);
-    // normal map
-    auto normal = *asset_manager_->load_texture("model/pillar/pillar_1_NormaL_GL.png", "normal");
+
+    auto normal =
+            assetManager_.loadTexture("model/pillar/pillar_1_NormaL_GL.png", "normal");
     textures.emplace_back(normal);
 
     return textures;

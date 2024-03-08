@@ -12,7 +12,7 @@
 namespace rndr {
     class Renderer {
         std::unique_ptr<android_app> app_;
-        std::unique_ptr<assetmgr::AssetManager> assetManager_;
+        std::unique_ptr<ndk_helper::assetmgr::AssetManager> assetManager_;
         std::unique_ptr<ndk_helper::timemgr::TimeManager> timeManager_;
         std::unique_ptr<mdlmgr::ModelManager> modelManager_;
 
