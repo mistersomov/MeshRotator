@@ -11,9 +11,9 @@ void mdlmgr::ModelManager::loadModelFromPath(const std::string& path) {
     auto modelAsset = assetManager_.loadModel(path);
     Assimp::Importer importer;
     auto scene = importer.ReadFileFromMemory(
-            modelAsset.data(),
-            modelAsset.length(),
-            aiProcess_Triangulate
+        modelAsset.data(),
+        modelAsset.length(),
+        aiProcess_Triangulate
             | aiProcess_JoinIdenticalVertices
             | aiProcess_CalcTangentSpace
             | aiProcess_GenSmoothNormals
