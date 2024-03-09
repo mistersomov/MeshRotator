@@ -25,7 +25,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags += "-std=c++11 -frtti -Wall -Werror"
+                cppFlags += "-std=c++14 -frtti -Wall -Werror"
                 arguments(
                     "-DNDK_HELPER_PATH=${project(":common:ndk_helper").projectDir}",
                     "-DANDROID_STL=c++_static",
