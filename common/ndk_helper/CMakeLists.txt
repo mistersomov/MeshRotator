@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(ndk_helper)
 set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 IF(NOT TARGET ndk_helper)
     #gameActivity
@@ -22,6 +24,11 @@ IF(NOT TARGET ndk_helper)
     link_directories(${ASSIMP_LIBRARY_DIRS})
     set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${ANDROID_ABI}/bin/libassimp.so)
 
+    #tests
+    set(TESTS_DIR ${CMAKE_ANDROID_NDK}/sources/third_party/googletest)
+    add_library(gtest STATIC IMPORTED)
+    include_directories(${TESTS_DIR}/include)
+
     add_library(ndk_helper STATIC
         src/main/cpp/manager/AssetManager.cpp
         src/main/cpp/manager/TimeManager.cpp
@@ -32,10 +39,17 @@ IF(NOT TARGET ndk_helper)
 
     target_include_directories(ndk_helper PRIVATE
         ${NDK_HELPER_PATH}
+        #tests
+        ${TESTS_DIR}
+    )
+
+    target_link_libraries(ndk_helper
         #assimp
         assimp
         #glm
         glm
+        # The game activity
+        game-activity::game-activity_static
         EGL
         GLESv3
     )

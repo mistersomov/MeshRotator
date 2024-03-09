@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project("meshrotator")
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 #include the native part of NDKHelper
 add_subdirectory (${NDK_HELPER_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libndk_helper")
 
@@ -23,6 +26,11 @@ include_directories(${ASSIMP_INCLUDE_DIRS})
 link_directories(${ASSIMP_LIBRARY_DIRS})
 set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${ANDROID_ABI}/bin/libassimp.so)
 
+#tests
+set(TESTS_DIR ${CMAKE_ANDROID_NDK}/sources/third_party/googletest)
+add_library(gtest STATIC IMPORTED)
+include_directories(${TESTS_DIR}/include)
+
 add_library(meshrotator SHARED
     src/main/cpp/manager/ModelManager.cpp
     src/main/cpp/utils/AndroidOut.cpp
@@ -31,6 +39,7 @@ add_library(meshrotator SHARED
 )
 target_include_directories(meshrotator PRIVATE
     ${ndk_helper_SOURCE_DIR}/src/main/cpp
+    ${TESTS_DIR}
 )
 target_link_libraries(meshrotator
     ndk_helper
