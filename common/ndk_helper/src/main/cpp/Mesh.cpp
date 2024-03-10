@@ -88,6 +88,12 @@ void ndk_helper::mesh::Mesh::prepare() {
     glBindVertexArray(0);
 }
 
+bool ndk_helper::mesh::Mesh::operator==(const mesh::Mesh& other) const {
+    return vertices_ == other.vertices_
+           && indices_ == other.indices_
+           && textures_ == other.textures_;
+}
+
 void ndk_helper::mesh::Mesh::draw(ndk_helper::shdr::Shader* shader) const {
     for (auto i = 0; i != textures_.size(); ++i) {
         glActiveTexture(GL_TEXTURE0 + i);

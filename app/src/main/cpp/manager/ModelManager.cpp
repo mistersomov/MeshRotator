@@ -25,21 +25,21 @@ void mdlmgr::ModelManager::loadModelFromPath(const std::string& path) {
     process_node(scene->mRootNode, scene);
 }
 
-std::vector<ndk_helper::mdl::Model> mdlmgr::ModelManager::get_models() const {
+std::vector<ndk_helper::mdl::Model_Impl> mdlmgr::ModelManager::get_models() const {
     return models_;
 }
 
 void mdlmgr::ModelManager::process_node(aiNode* node, const aiScene* scene) {
     for (auto i = 0; i != node->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[node->mMeshes[i]];
-        models_.push_back(process_mesh(mesh, scene));
+        models_.push_back(process_mesh(mesh));
     }
     for (auto i = 0; i != node->mNumChildren; ++i) {
         process_node(node->mChildren[i], scene);
     }
 }
 
-ndk_helper::mesh::Mesh mdlmgr::ModelManager::process_mesh(aiMesh* mesh, const aiScene* scene) {
+ndk_helper::mesh::Mesh mdlmgr::ModelManager::process_mesh(aiMesh* mesh) {
     std::vector<ndk_helper::mesh::Vertex> vertices;
     std::vector<uint16_t> indices;
 
@@ -103,4 +103,16 @@ std::vector<ndk_helper::mesh::Texture> mdlmgr::ModelManager::process_textures() 
     textures.emplace_back(normal);
 
     return textures;
+}
+
+void mdlmgr::ModelManager::translate(glm::vec3 newPosition) {
+    std::for_each( models_.begin(), models_.end(), [newPosition](ndk_helper::mdl::Model& model){
+        model.setPosition(newPosition);
+    });
+}
+
+void mdlmgr::ModelManager::scale(glm::vec3 newScale) {
+    std::for_each( models_.begin(), models_.end(), [newScale](ndk_helper::mdl::Model& model){
+        model.setScale(newScale);
+    });
 }

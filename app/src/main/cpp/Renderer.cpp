@@ -6,8 +6,6 @@
 #include <exception>
 
 bool outlineEnabled;
-float xGlobal = 0.0f;
-float yGlobal = 0.0f;
 
 rndr::Renderer::Renderer(android_app *app): app_{app},
                                             assetManager_{new ndk_helper::assetmgr::AssetManager(app->activity->assetManager)},
@@ -17,6 +15,8 @@ rndr::Renderer::Renderer(android_app *app): app_{app},
     prepare_graphics();
     create_shaders();
     modelManager_->loadModelFromPath("model/pillar/pillarsSF.obj");
+    modelManager_->translate({0.0f, 0.0f, -5.0f});
+    modelManager_->scale(glm::vec3(0.5f));
     create_matrix_uniform_buffer();
     create_framebuffer();
 };
@@ -46,13 +46,13 @@ void rndr::Renderer::render() {
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilMask(0xFF);
         glm::mat4 modelView =
-            glm::translate(glm::mat4(1.0f), glm::vec3{xGlobal, yGlobal, -5.0f})
+            glm::translate(glm::mat4(1.0f), i->getPosition())
                 * glm::rotate(
                     glm::mat4(1.0f),
                     glm::radians(timeManager_->delta() * (-50.0f)),
                     glm::vec3{0.0f, 1.0f, 0.0f}
                 )
-                * glm::scale(glm::mat4(1.0f), glm::vec3{0.48f, 0.48f, 0.48f});
+                * glm::scale(glm::mat4(1.0f), i->getScale());
         shader_->activate();
         shader_->set_mat4("MODEL_VIEW", modelView);
         shader_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
@@ -70,26 +70,27 @@ void rndr::Renderer::render() {
         shader_->set_vec3("dirLight.direction", glm::vec3{-0.2f, -1.0f, -0.3f});
         shader_->set_vec3("dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
         shader_->set_vec3("dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
-        shader_->set_vec3("dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});i->draw(*shader_);
+        shader_->set_vec3("dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});
+        i->draw(*shader_);
 
         if (outlineEnabled) {
             normalVectorShader_->activate();
             normalVectorShader_->set_mat4("MODEL_VIEW", modelView);
             i->draw(*normalVectorShader_);
 
-            float scaled = 0.5f;
+            float scaled = 1.05f;
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
             glDisable(GL_DEPTH_TEST);
             outlined_->activate();
             modelView =
-                glm::translate(glm::mat4(1.0f), glm::vec3{xGlobal, yGlobal, -5.0f})
+                glm::translate(glm::mat4(1.0f), i->getPosition())
                 * glm::rotate(
                     glm::mat4(1.0f),
                     glm::radians(timeManager_->delta() * (-50.0f)),
                     glm::vec3{0.0f, 1.0f, 0.0f}
                 )
-                * glm::scale(glm::mat4(1.0f), glm::vec3{scaled, scaled, scaled});
+                * glm::scale(glm::mat4(1.0f), scaled*(i->getScale()));
             outlined_->set_mat4("MODEL_VIEW", modelView);
             outlined_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
             outlined_->set_float("uTime", timeManager_->delta());

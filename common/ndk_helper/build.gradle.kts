@@ -52,4 +52,10 @@ android {
 
 dependencies {
     api(libs.game.activity)
+
+    // tests
+    implementation(libs.androidx.junit.gtest)
+    implementation(libs.googletest)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext)
 }
