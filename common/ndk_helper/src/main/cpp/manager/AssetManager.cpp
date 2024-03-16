@@ -1,10 +1,15 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include "AssetManager.hpp"
 #include "../utils/AndroidOut.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include "../third_party/stb/stb_image.h"
 #include <exception>
 
 ndk_helper::assetmgr::AssetManager::AssetManager(AAssetManager* aAssetManager) : aasetManager_{aAssetManager} {}
+
+ndk_helper::assetmgr::AssetManager::~AssetManager() {
+    if (aasetManager_) {
+        aasetManager_ = nullptr;
+    }
+}
 
 const GLuint ndk_helper::assetmgr::AssetManager::loadShader(
     const GLenum type,

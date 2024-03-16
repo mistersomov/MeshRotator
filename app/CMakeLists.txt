@@ -31,7 +31,6 @@ find_package(googletest REQUIRED CONFIG)
 find_package(junit-gtest REQUIRED CONFIG)
 
 add_library(meshrotator SHARED
-    src/main/cpp/manager/ModelManager.cpp
     src/main/cpp/Renderer.cpp
     src/main/cpp/main.cpp
 )
@@ -56,6 +55,7 @@ target_link_libraries(meshrotator
 
     EGL
     GLESv3
+
     android
     log
 )
