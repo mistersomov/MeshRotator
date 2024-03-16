@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project("meshrotator")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #include the native part of NDKHelper
@@ -32,7 +32,6 @@ find_package(junit-gtest REQUIRED CONFIG)
 
 add_library(meshrotator SHARED
     src/main/cpp/manager/ModelManager.cpp
-    src/main/cpp/utils/AndroidOut.cpp
     src/main/cpp/Renderer.cpp
     src/main/cpp/main.cpp
 )

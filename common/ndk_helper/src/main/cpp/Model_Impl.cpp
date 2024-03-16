@@ -1,5 +1,5 @@
 #include "Model_Impl.hpp"
-#include "../../../../../app/src/main/cpp/utils/AndroidOut.h"
+#include "NDKHelper.hpp"
 
 ndk_helper::mdl::Model_Impl::Model_Impl(
     const ndk_helper::mesh::Mesh& mesh,

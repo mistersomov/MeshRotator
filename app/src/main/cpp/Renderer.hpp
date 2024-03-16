@@ -1,11 +1,7 @@
 #ifndef MESHROTATOR_RENDERER_HPP
 #define MESHROTATOR_RENDERER_HPP
 
-#include "NDKHelper.hpp"
-#include "manager/AssetManager.hpp"
 #include "manager/ModelManager.hpp"
-#include "utils/AndroidOut.h"
-
 #include <EGL/egl.h>
 #include <game-activity/native_app_glue/android_native_app_glue.h>
 

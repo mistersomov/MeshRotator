@@ -1,5 +1,5 @@
 #include "AssetManager.hpp"
-#include "../../../../../../app/src/main/cpp/utils/AndroidOut.h"
+#include "../utils/AndroidOut.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../third_party/stb/stb_image.h"
 #include <exception>
