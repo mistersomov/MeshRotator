@@ -1,6 +1,5 @@
 #include "../Model_Impl.hpp"
 #include "mock/MeshMock.hpp"
-#include "../utils/Utility.hpp"
 #include <gtest/gtest.h>
 
 namespace ndk_helper {
@@ -12,12 +11,12 @@ namespace ndk_helper {
             void SetUp() override {
                 mesh::Vertex vertex{{0.0f, 1.0f, 2.0f}};
                 mesh::Mesh mesh{{vertex}, {}};
-                model_ = utils::make_unique<mdl::Model_Impl>(
-                    mdl::Model_Impl(
+                model_ = std::unique_ptr<mdl::Model_Impl>(
+                    new mdl::Model_Impl{
                         mesh,
                         glm::vec3(0.0f),
                         glm::vec3(1.0f)
-                    )
+                    }
                 );
             }
             void TearDown() override {}

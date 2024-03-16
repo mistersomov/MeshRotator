@@ -11,7 +11,7 @@ namespace ndk_helper {
         class AssetManager {
         public:
             AssetManager(AAssetManager* aasetManager);
-            ~AssetManager() = default;
+            ~AssetManager();
 
             const GLuint loadShader(const GLenum type, const std::string& path) const;
             const ndk_helper::mesh::Texture loadTexture(

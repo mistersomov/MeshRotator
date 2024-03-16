@@ -1,7 +1,7 @@
 #ifndef MESHROTATOR_RENDERER_HPP
 #define MESHROTATOR_RENDERER_HPP
 
-#include "manager/ModelManager.hpp"
+#include "NDKHelper.hpp"
 #include <EGL/egl.h>
 #include <game-activity/native_app_glue/android_native_app_glue.h>
 
@@ -10,7 +10,7 @@ namespace rndr {
         std::unique_ptr<android_app> app_;
         std::unique_ptr<ndk_helper::assetmgr::AssetManager> assetManager_;
         std::unique_ptr<ndk_helper::timemgr::TimeManager> timeManager_;
-        std::unique_ptr<mdlmgr::ModelManager> modelManager_;
+        std::unique_ptr<ndk_helper::mdlmgr::ModelManager> modelManager_;
 
         EGLDisplay display_{EGL_NO_DISPLAY};
         EGLSurface surface_{EGL_NO_SURFACE};

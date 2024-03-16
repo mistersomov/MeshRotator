@@ -1,7 +1,4 @@
 #include "Renderer.hpp"
-#include "utils/Utility.hpp"
-#include <memory>
-#include <glm/gtc/matrix_transform.hpp>
 #include <exception>
 
 bool outlineEnabled;
@@ -9,7 +6,7 @@ bool outlineEnabled;
 rndr::Renderer::Renderer(android_app *app): app_{app},
                                             assetManager_{new ndk_helper::assetmgr::AssetManager(app->activity->assetManager)},
                                             timeManager_{new ndk_helper::timemgr::TimeManager()},
-                                            modelManager_{new mdlmgr::ModelManager(*assetManager_)}
+                                            modelManager_{new ndk_helper::mdlmgr::ModelManager(*assetManager_)}
 {
     prepare_graphics();
     create_shaders();
