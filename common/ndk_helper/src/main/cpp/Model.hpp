@@ -3,27 +3,17 @@
 
 #include "Mesh.hpp"
 
-#include <assimp/scene.h>
-#include <vector>
-#include <string>
-
 namespace ndk_helper {
     namespace mdl {
-        class Model {
-            std::vector<ndk_helper::mesh::Mesh> meshes_;
+        struct Model {
+            virtual ~Model() {};
 
-            void process_mesh(aiMesh*);
-        public:
-            Model(const std::vector<aiMesh*>&);
-            Model(const std::vector<GLfloat>&, const std::vector<uint16_t>&);
-            Model(
-                const std::vector<GLfloat>&,
-                const std::vector<uint16_t>&,
-                const std::vector<mesh::Texture>&
-            );
-
-            void draw(shdr::Shader&) const;
-
+            virtual std::vector<mesh::Mesh> getMeshes() const = 0;
+            virtual void draw(shdr::Shader& shader) const = 0;
+            virtual void setPosition(const glm::vec3& position) = 0;
+            virtual glm::vec3 getPosition() const = 0;
+            virtual void setScale(const glm::vec3& scale) = 0;
+            virtual glm::vec3 getScale() const = 0;
         };
     }
 }

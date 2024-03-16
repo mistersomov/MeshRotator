@@ -3,25 +3,41 @@ androidx-appcompat = "1.6.1"
 core-ktx = "1.12.0"
 material = "1.11.0"
 constraintlayout = "2.1.4"
+agp = "8.2.2"
+kotlin = "1.9.22"
+gradle = "8.1.4"
+
 #GameActivity
 game-activity = "2.0.2"
+
 #Compose
 compose-bom = "2024.01.00"
+
+#Analytics/Crashlytics
+firebase-bom = "32.7.3"
+firebase-crashlytics-gradle = "2.9.9"
+
+#Google
+google-services = "4.4.1"
+ksp = "1.9.22-1.0.17"
 
 #test
 junit = "4.13.2"
 androidx-test-ext = "1.1.5"
 androidx-test-espresso = "3.5.1"
-agp = "8.2.1"
-kotlin = "1.9.22"
+googletest = "1.11.0-beta-1"
+junit-gtest = "1.0.0-alpha02"
 
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
+
 #GameActivity
 game-activity = { group = "androidx.games", name = "games-activity", version.ref = "game-activity" }
+
 #Compose
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 ui = { group = "androidx.compose.ui", name = "ui" }
@@ -31,11 +47,23 @@ ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 material3 = { group = "androidx.compose.material3", name = "material3" }
 
+#Analytics/Crashlytics
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebaseCrashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+firebaseCrashlyticsNdk = { group = "com.google.firebase", name = "firebase-crashlytics-ndk" }
+firebase-crashlytics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
+
 #test
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext" }
 androidx-test-espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-test-espresso" }
+androidx-junit-gtest = { module = "androidx.test.ext:junit-gtest", version.ref = "junit-gtest" }
+googletest = { module = "com.android.ndk.thirdparty:googletest", version.ref = "googletest" }
+
 [plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-androidApplication = { id = "com.android.application", version.ref = "agp" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

@@ -9,21 +9,17 @@
 
 namespace ndk_helper {
     namespace shdr {
-        class Shader {
-            GLuint programId_;
-            std::unordered_map<std::string, GLuint> uniforms_;
-        public:
+        struct Shader {
             Shader(GLuint) noexcept;
-            ~Shader();
 
             void activate() const;
-            GLuint get_id() const;
-        };
+            void set_int(const std::string& name, int value) const;
+            void set_float(const std::string& name, float value) const;
+            void set_vec3(const std::string& name, const glm::vec3 value) const;
+            void set_mat4(const std::string& name, const glm::mat4 value) const;
 
-        void set_int(Shader*, const std::string&, int);
-        void set_float(Shader*, const std::string&, float);
-        void set_vec3(Shader*, const std::string&, const glm::vec3);
-        void set_mat4(Shader*, const std::string&, const glm::mat4);
+            GLuint id_;
+        };
     }
 }
 

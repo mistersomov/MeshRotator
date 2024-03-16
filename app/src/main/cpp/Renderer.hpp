@@ -3,6 +3,7 @@
 
 #include "NDKHelper.hpp"
 #include "manager/AssetManager.hpp"
+#include "manager/ModelManager.hpp"
 #include "utils/AndroidOut.h"
 
 #include <EGL/egl.h>
@@ -11,8 +12,9 @@
 namespace rndr {
     class Renderer {
         std::unique_ptr<android_app> app_;
-        std::unique_ptr<assetmgr::AssetManager> asset_manager_;
-        std::unique_ptr<ndk_helper::timemgr::TimeManager> time_manager_;
+        std::unique_ptr<ndk_helper::assetmgr::AssetManager> assetManager_;
+        std::unique_ptr<ndk_helper::timemgr::TimeManager> timeManager_;
+        std::unique_ptr<mdlmgr::ModelManager> modelManager_;
 
         EGLDisplay display_{EGL_NO_DISPLAY};
         EGLSurface surface_{EGL_NO_SURFACE};
@@ -20,27 +22,24 @@ namespace rndr {
         EGLint width_{0};
         EGLint height_{0};
 
-        std::vector<ndk_helper::mdl::Model> models_;
         std::unique_ptr<ndk_helper::shdr::Shader> shader_;
         std::unique_ptr<ndk_helper::shdr::Shader> outlined_;
+        std::unique_ptr<ndk_helper::shdr::Shader> normalVectorShader_;
         std::unique_ptr<ndk_helper::shdr::Shader> screenShader_;
 
-        GLuint uboMatrices_{0};
+        GLuint framebuffer_{0}, renderbuffer_{0};
+        GLuint framebufferTexture_{0};
+        GLuint framebufferVAO_{0}, framebufferVBO_{0};
 
         void prepare_graphics();
-        void create_model();
         void create_matrix_uniform_buffer();
+        void create_shaders();
+        void create_framebuffer();
+        void create_renderbuffer();
+        void render_framebuffer();
+        void destroy_framebuffer();
     public:
-        inline Renderer(
-            android_app *app
-        ) : app_{app},
-            asset_manager_{new assetmgr::AssetManager(app->activity->assetManager)},
-            time_manager_{new ndk_helper::timemgr::TimeManager()}
-        {
-            prepare_graphics();
-            create_model();
-            create_matrix_uniform_buffer();
-        };
+        Renderer(android_app *app);
         ~Renderer();
 
         void render();

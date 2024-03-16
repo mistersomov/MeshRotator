@@ -66,24 +66,39 @@ void ndk_helper::mesh::Mesh::prepare() {
         sizeof(Vertex),
         (void*)offsetof(Vertex, texCoord)
     );
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(
+        3,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        (void*)offsetof(Vertex, tangent)
+    );
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(
+        4,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        (void*)offsetof(Vertex, bitangent)
+    );
 
     glBindVertexArray(0);
 }
 
-void ndk_helper::mesh::Mesh::draw(ndk_helper::shdr::Shader* shader) const {
-    unsigned int diffuseNr{0};
-    unsigned int specularNr{0};
+bool ndk_helper::mesh::Mesh::operator==(const mesh::Mesh& other) const {
+    return vertices_ == other.vertices_
+           && indices_ == other.indices_
+           && textures_ == other.textures_;
+}
 
+void ndk_helper::mesh::Mesh::draw(ndk_helper::shdr::Shader* shader) const {
     for (auto i = 0; i != textures_.size(); ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         std::string name = textures_[i].type;
-        std::string number;
-        if (name == "diffuse") {
-            number = std::to_string(diffuseNr++);
-        } else if (name == "specular") {
-            number = std::to_string(specularNr++);
-        }
-        ndk_helper::shdr::set_int(shader, "material." + name, i);
+        shader->set_int("material." + name, i);
         glBindTexture(GL_TEXTURE_2D, textures_[i].id);
     }
 

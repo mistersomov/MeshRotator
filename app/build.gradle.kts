@@ -1,6 +1,11 @@
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
+
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.googleServices)
+    alias(libs.plugins.firebaseCrashlytics)
 }
 
 val appNameDev = "MeshRotator Dev"
@@ -20,7 +25,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags += "-std=c++11 -frtti -Wall -Werror"
+                cppFlags += "-std=c++14 -frtti -Wall -Werror"
                 arguments(
                     "-DNDK_HELPER_PATH=${project(":common:ndk_helper").projectDir}",
                     "-DANDROID_STL=c++_static",
@@ -31,13 +36,13 @@ android {
     }
 
     buildTypes {
-        debug {
+        getByName("debug") {
             applicationIdSuffix = ".dev"
             isDebuggable = true
             isMinifyEnabled = false
             resValue(type = "string", name = "app_name", value = appNameDev)
         }
-        release {
+        getByName("release") {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
@@ -47,6 +52,9 @@ android {
             )
             signingConfig = signingConfigs.getByName("debug")
             resValue(type = "string", name = "app_name", value = appNameProd)
+            configure<CrashlyticsExtension> {
+                nativeSymbolUploadEnabled = true
+            }
         }
     }
     compileOptions {
@@ -79,9 +87,19 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
+
     //compose
     //implementation(platform(libs.compose.bom))
     //implementation(libs.material3)
+
+    // analytics
+    api(platform(libs.firebase.bom))
+    implementation(libs.firebaseCrashlytics)
+    implementation(libs.firebaseCrashlyticsNdk)
+
+    // tests
+    implementation(libs.androidx.junit.gtest)
+    implementation(libs.googletest)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.espresso)

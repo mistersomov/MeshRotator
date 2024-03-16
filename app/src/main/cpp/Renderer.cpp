@@ -6,10 +6,23 @@
 #include <exception>
 
 bool outlineEnabled;
-float xGlobal = 0.0f;
-float yGlobal = 0.0f;
+
+rndr::Renderer::Renderer(android_app *app): app_{app},
+                                            assetManager_{new ndk_helper::assetmgr::AssetManager(app->activity->assetManager)},
+                                            timeManager_{new ndk_helper::timemgr::TimeManager()},
+                                            modelManager_{new mdlmgr::ModelManager(*assetManager_)}
+{
+    prepare_graphics();
+    create_shaders();
+    modelManager_->loadModelFromPath("model/pillar/pillarsSF.obj");
+    modelManager_->translate({0.0f, 0.0f, -5.0f});
+    modelManager_->scale(glm::vec3(0.5f));
+    create_matrix_uniform_buffer();
+    create_framebuffer();
+};
 
 rndr::Renderer::~Renderer() {
+    destroy_framebuffer();
     if (display_ != EGL_NO_DISPLAY) {
         eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         if (context_ != EGL_NO_CONTEXT) {
@@ -23,331 +36,71 @@ rndr::Renderer::~Renderer() {
     }
 }
 
-void rndr::Renderer::prepare_graphics() {
-    constexpr float RED = 0.1f;
-    constexpr float GREEN = 0.1f;
-    constexpr float BLUE = 0.1f;
-    constexpr float ALPHA = 1.0f;
-    constexpr EGLint attrs[] = {
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_BLUE_SIZE, 8,
-        EGL_GREEN_SIZE, 8,
-        EGL_RED_SIZE, 8,
-        EGL_DEPTH_SIZE, 24,
-        EGL_NONE
-    };
-
-    auto display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    eglInitialize(display, nullptr, nullptr);
-
-    EGLint numConfigs;
-    eglChooseConfig(display, attrs, nullptr, 0, &numConfigs);
-
-    // get the list of configurations
-    std::unique_ptr<EGLConfig[]> configs(new EGLConfig[numConfigs]);
-    eglChooseConfig(display, attrs, configs.get(), numConfigs, &numConfigs);
-
-    // choose a config
-    auto config = *std::find_if(
-        configs.get(),
-        configs.get() + numConfigs,
-        [&display](const EGLConfig &config) {
-            EGLint red, green, blue, depth;
-            if (eglGetConfigAttrib(display, config, EGL_RED_SIZE, &red)
-                && eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &green)
-                && eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &blue)
-                && eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE, &depth)) {
-
-                aout << "Found config with " << red << ", " << green << ", " << blue << ", "
-                     << depth << std::endl;
-                return red == 8 && green == 8 && blue == 8 && depth == 24;
-            }
-            return false;
-        }
-    );
-
-    aout << "Found " << numConfigs << " configs" << std::endl;
-    aout << "Choose " << config << std::endl;
-
-    // create the proper window surface
-    EGLint format;
-    eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
-    EGLSurface surface = eglCreateWindowSurface(display, config, app_->window, nullptr);
-
-    // Create a GLES 3 context
-    EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
-    EGLContext context = eglCreateContext(display, config, nullptr, contextAttribs);
-
-    // get some window metrics
-    eglMakeCurrent(display, surface, surface, context);
-    eglQuerySurface(display, surface, EGL_WIDTH, &width_);
-    eglQuerySurface(display, surface, EGL_HEIGHT, &height_);
-
-    display_ = display;
-    surface_ = surface;
-    context_ = context;
-
-    glViewport(0, 0, width_, height_);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glClearColor(RED, GREEN, BLUE, ALPHA);
-
-    aout << "GL_VERSION: " << glGetString(GL_VERSION) << std::endl;
-    aout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
-    aout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
-
-    shader_ = std::unique_ptr<ndk_helper::shdr::Shader>(asset_manager_->load_shader("shader/cube.vert", "shader/cube.frag"));
-    outlined_ = std::unique_ptr<ndk_helper::shdr::Shader>(asset_manager_->load_shader("shader/cube.vert", "shader/outlined.frag"));
-    screenShader_ = std::unique_ptr<ndk_helper::shdr::Shader>(asset_manager_->load_shader("shader/framebuffer_screen.vert", "shader/framebuffer_screen.frag"));
-
-    time_manager_->reset();
-}
-
-void rndr::Renderer::create_model() {
-    std::vector<GLfloat> cubeVertices {
-        // positions          // normals           // diffuse_color
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f, // 0 bottom back left
-        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f, // 1 bottom back right
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f, // 2 top back right
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f, // 3 top back left
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f, // 4 bottom front left
-        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f, // 5 bottom front right
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f, // 6 top front right
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f, // 7 top front left
-
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // 8 left side left bottom
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // 9 left side right bottom
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // 10 left side right top
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // 11 left side left top
-
-        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // 12 right side left bottom
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // 13 right side right bottom
-        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // 14 right side right top
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // 15 right side left top
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f, //16  bottom back left
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f, // 17 bottom front left
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f, // 18 bottom front right
-        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f, // 19 bottom back right
-
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, // 20 top front left
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f, // 21 top front right
-        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f, // 22 top back right
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f, // 23 top back left
-    };
-    std::vector<GLushort> cubeIndices {
-        0, 1, 3,
-        2, 3, 1,
-
-        4, 5, 7,
-        6, 7, 5,
-
-        8, 9, 11,
-        10, 11, 9,
-
-        12, 13, 15,
-        14, 15, 13,
-
-        16, 17, 18,
-        16, 18, 19,
-
-        20, 21, 23,
-        22, 23, 21
-    };
-    std::vector<ndk_helper::mesh::Texture> textures;
-    auto diffuseTexture = asset_manager_->load_texture("model/container.png", "diffuse");
-    auto specularTexture = asset_manager_->load_texture("model/container_specular.png", "specular");
-    textures.push_back(*diffuseTexture.get());
-    textures.push_back(*specularTexture.get());
-
-    models_.emplace_back(ndk_helper::mdl::Model{cubeVertices, cubeIndices, textures});
-
-//    try {
-//        auto meshes = asset_manager_->load_mesh("model/bow/bow.obj");
-//        models_.emplace_back(mdl::Model{meshes});
-//    } catch (std::ios_base::failure& e) {
-//        aout << e.what() << std::endl;
-//    }
-//    catch (std::exception_ptr& e) {
-//        aout << "Failed to load model" << std::endl;
-//    }
-//    catch (std::exception& e) {
-//        aout << e.what() << std::endl;
-//        return;
-//    }
-}
-
-void rndr::Renderer::create_matrix_uniform_buffer() {
-    unsigned int uniformBlockIndex =
-            glGetUniformBlockIndex(shader_->get_id(), "Matrices");
-    glUniformBlockBinding(shader_->get_id(), uniformBlockIndex, 0);
-
-    size_t bufferSize = 2 * sizeof(glm::mat4);
-    glGenBuffers(1, &uboMatrices_);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices_);
-    glBufferData(
-        GL_UNIFORM_BUFFER,
-        bufferSize,
-        nullptr,
-        GL_STATIC_DRAW
-    );
-    glBindBufferRange(
-        GL_UNIFORM_BUFFER,
-        0,
-        uboMatrices_,
-        0,
-        bufferSize
-    );
-
-    glm::mat4 projection = utils::get_projection_matrix(
-        static_cast<float>(width_),
-        static_cast<float>(height_)
-    );
-    glBufferSubData(
-        GL_UNIFORM_BUFFER,
-        0,
-        sizeof(glm::mat4),
-        glm::value_ptr(projection)
-    );
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-}
-
 void rndr::Renderer::render() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    time_manager_->update_time();
+    timeManager_->update_time();
+    auto models = modelManager_->get_models();
 
-    // framebuffer
-//    GLuint fbo;
-//    glGenFramebuffers(1, &fbo);
-//    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-//    unsigned int textureColorbuffer;
-//    glGenTextures(1, &textureColorbuffer);
-//    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-//    glTexImage2D(
-//        GL_TEXTURE_2D,
-//        0,
-//        GL_RGB,
-//        width_,
-//        height_,
-//        0,
-//        GL_RGB,
-//        GL_UNSIGNED_BYTE,
-//        nullptr
-//    );
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//    glFramebufferTexture2D(
-//        GL_FRAMEBUFFER,
-//        GL_COLOR_ATTACHMENT0,
-//        GL_TEXTURE_2D,
-//        textureColorbuffer,
-//        0
-//    );
-//    GLuint rbo;
-//    glGenRenderbuffers(1, &rbo);
-//    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
-//    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-//    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-//
-//    }
-//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//    //
-//
-//    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-    for (auto i = models_.begin(), end = models_.end(); i != end; ++i) {
+    for (auto i = models.begin(), end = models.end(); i != end; ++i) {
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilMask(0xFF);
         glm::mat4 modelView =
-            glm::translate(glm::mat4(1.0f), glm::vec3{xGlobal, yGlobal, -5.0f})
+            glm::translate(glm::mat4(1.0f), i->getPosition())
                 * glm::rotate(
                     glm::mat4(1.0f),
-                    glm::radians(time_manager_->delta() * (-50.0f)),
-                    glm::vec3{0.2f, 0.3f, 0.0f}
-                );
+                    glm::radians(timeManager_->delta() * (-50.0f)),
+                    glm::vec3{0.0f, 1.0f, 0.0f}
+                )
+                * glm::scale(glm::mat4(1.0f), i->getScale());
         shader_->activate();
-        ndk_helper::shdr::set_mat4(shader_.get(), "MODEL_VIEW", modelView);
-        ndk_helper::shdr::set_vec3(shader_.get(), "viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
+        shader_->set_mat4("MODEL_VIEW", modelView);
+        shader_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
 
-        ndk_helper::shdr::set_float(shader_.get(), "material.shininess", 64.0f);
+        shader_->set_float("material.shininess", 64.0f);
 
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.position", utils::get_light_dir());
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.diffuse", glm::vec3{0.5f, 0.5f, 0.5f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
-        ndk_helper::shdr::set_float(shader_.get(), "pointLight.constant", 1.0f);
-        ndk_helper::shdr::set_float(shader_.get(), "pointLight.linear", 0.09f);
-        ndk_helper::shdr::set_float(shader_.get(), "pointLight.quadratic", 0.032f);
+        shader_->set_vec3("pointLight.position", utils::get_light_dir());
+        shader_->set_vec3("pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
+        shader_->set_vec3("pointLight.diffuse", utils::get_light_color());
+        shader_->set_vec3("pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
+        shader_->set_float("pointLight.constant", 1.0f);
+        shader_->set_float("pointLight.linear", 0.09f);
+        shader_->set_float("pointLight.quadratic", 0.032f);
 
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.direction", glm::vec3{-0.2f, -1.0f, -0.3f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
-        ndk_helper::shdr::set_vec3(shader_.get(), "dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});i->draw(*shader_);
+        shader_->set_vec3("dirLight.direction", glm::vec3{-0.2f, -1.0f, -0.3f});
+        shader_->set_vec3("dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
+        shader_->set_vec3("dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
+        shader_->set_vec3("dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});
+        i->draw(*shader_);
 
         if (outlineEnabled) {
+            normalVectorShader_->activate();
+            normalVectorShader_->set_mat4("MODEL_VIEW", modelView);
+            i->draw(*normalVectorShader_);
+
             float scaled = 1.05f;
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
             glDisable(GL_DEPTH_TEST);
             outlined_->activate();
             modelView =
-                    glm::translate(glm::mat4(1.0f), glm::vec3{xGlobal, yGlobal, -5.0f})
-                    * glm::rotate(
-                            glm::mat4(1.0f),
-                            glm::radians(time_manager_->delta() * (-50.0f)),
-                            glm::vec3{0.2f, 0.3f, 0.0f}
-                    )
-                    * glm::scale(glm::mat4(1.0f), glm::vec3{scaled, scaled, scaled});
-            ndk_helper::shdr::set_mat4(outlined_.get(), "MODEL_VIEW", modelView);
-            ndk_helper::shdr::set_vec3(outlined_.get(), "viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
-            ndk_helper::shdr::set_float(outlined_.get(), "uTime", time_manager_->delta());
+                glm::translate(glm::mat4(1.0f), i->getPosition())
+                * glm::rotate(
+                    glm::mat4(1.0f),
+                    glm::radians(timeManager_->delta() * (-50.0f)),
+                    glm::vec3{0.0f, 1.0f, 0.0f}
+                )
+                * glm::scale(glm::mat4(1.0f), scaled*(i->getScale()));
+            outlined_->set_mat4("MODEL_VIEW", modelView);
+            outlined_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
+            outlined_->set_float("uTime", timeManager_->delta());
             i->draw(*outlined_);
             glEnable(GL_DEPTH_TEST);
             glStencilMask(0xFF);
             glStencilFunc(GL_ALWAYS, 0, 0xFF);
         }
     }
-//
-//
-//
-//
-//    std::vector<GLfloat> quadVertices {
-//            -1.0f,  1.0f,  0.0f, 1.0f,
-//            -1.0f, -1.0f,  0.0f, 0.0f,
-//            1.0f, -1.0f,  1.0f, 0.0f,
-//
-//            -1.0f,  1.0f,  0.0f, 1.0f,
-//            1.0f, -1.0f,  1.0f, 0.0f,
-//            1.0f,  1.0f,  1.0f, 1.0f
-//    };
-//    unsigned int quadVAO, quadVBO;
-//    glGenVertexArrays(1, &quadVAO);
-//    glGenBuffers(1, &quadVBO);
-//    glBindVertexArray(quadVAO);
-//    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices.data(), GL_STATIC_DRAW);
-//    glEnableVertexAttribArray(0);
-//    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(1);
-//    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-//
-//
-//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//    glDisable(GL_DEPTH_TEST);
-//    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-//    glClear(GL_COLOR_BUFFER_BIT);
-//    screenShader_->activate();
-//    ndk_helper::shdr::set_int(screenShader_.get(), "screenTexture", 0);
-//    glBindVertexArray(quadVAO);
-//    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);	// use the color attachment texture as the texture of the quad plane
-//    glDrawArrays(GL_TRIANGLES, 0, 6);
-
+    render_framebuffer();
     eglSwapBuffers(display_, surface_);
 }
 
@@ -429,4 +182,260 @@ void rndr::Renderer::handle_input() {
     }
     // clear the key input count too.
     android_app_clear_key_events(inputBuffer);
+}
+
+void rndr::Renderer::prepare_graphics() {
+    constexpr float RED = 0.1f;
+    constexpr float GREEN = 0.1f;
+    constexpr float BLUE = 0.1f;
+    constexpr float ALPHA = 1.0f;
+    constexpr EGLint attrs[] = {
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_BLUE_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_RED_SIZE, 8,
+        EGL_DEPTH_SIZE, 24,
+        EGL_NONE
+    };
+
+    auto display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    eglInitialize(display, nullptr, nullptr);
+
+    EGLint numConfigs;
+    eglChooseConfig(display, attrs, nullptr, 0, &numConfigs);
+
+    // get the list of configurations
+    std::unique_ptr<EGLConfig[]> configs(new EGLConfig[numConfigs]);
+    eglChooseConfig(display, attrs, configs.get(), numConfigs, &numConfigs);
+
+    // choose a config
+    auto config =
+        *std::find_if(
+            configs.get(),
+            configs.get() + numConfigs,
+            [&display](const EGLConfig &config) {
+                EGLint red, green, blue, depth;
+                if (eglGetConfigAttrib(display, config, EGL_RED_SIZE, &red)
+                    && eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &green)
+                    && eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &blue)
+                    && eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE, &depth)) {
+
+                    aout << "Found config with " << red << ", " << green << ", " << blue << ", "
+                         << depth << std::endl;
+                    return red == 8 && green == 8 && blue == 8 && depth == 24;
+                }
+                return false;
+            }
+    );
+
+    aout << "Found " << numConfigs << " configs" << std::endl;
+    aout << "Choose " << config << std::endl;
+
+    // create the proper window surface
+    EGLint format;
+    eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
+    EGLSurface surface = eglCreateWindowSurface(display, config, app_->window, nullptr);
+
+    // Create a GLES 3 context
+    EGLint contextAttribs[] = {
+        EGL_CONTEXT_MAJOR_VERSION,
+        3, EGL_CONTEXT_MINOR_VERSION,
+        2,
+        EGL_NONE
+    };
+    EGLContext context = eglCreateContext(display, config, nullptr, contextAttribs);
+
+    // get some window metrics
+    eglMakeCurrent(display, surface, surface, context);
+    eglQuerySurface(display, surface, EGL_WIDTH, &width_);
+    eglQuerySurface(display, surface, EGL_HEIGHT, &height_);
+
+    display_ = display;
+    surface_ = surface;
+    context_ = context;
+
+    glViewport(0, 0, width_, height_);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glClearColor(RED, GREEN, BLUE, ALPHA);
+
+    aout << "GL_VERSION: " << glGetString(GL_VERSION) << std::endl;
+    aout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
+    aout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
+
+    timeManager_->reset();
+}
+
+void rndr::Renderer::create_matrix_uniform_buffer() {
+    GLuint uboMatrices;
+    unsigned int uniformBlockIndex =
+            glGetUniformBlockIndex(shader_->id_, "Matrices");
+    glUniformBlockBinding(shader_->id_, uniformBlockIndex, 0);
+
+    size_t bufferSize = 2 * sizeof(glm::mat4);
+    glGenBuffers(1, &uboMatrices);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+    glBufferData(
+        GL_UNIFORM_BUFFER,
+        bufferSize,
+        nullptr,
+        GL_STATIC_DRAW
+    );
+    glBindBufferRange(
+        GL_UNIFORM_BUFFER,
+        0,
+        uboMatrices,
+        0,
+        bufferSize
+    );
+
+    glm::mat4 projection = utils::get_projection_matrix(
+        static_cast<float>(width_),
+        static_cast<float>(height_)
+    );
+    glBufferSubData(
+        GL_UNIFORM_BUFFER,
+        0,
+        sizeof(glm::mat4),
+        glm::value_ptr(projection)
+    );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void rndr::Renderer::create_framebuffer() {
+    std::vector<GLfloat> screenVertices {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f
+    };
+    glGenVertexArrays(1, &framebufferVAO_);
+    glBindVertexArray(framebufferVAO_);
+    glGenBuffers(1, &framebufferVBO_);
+    glBindBuffer(GL_ARRAY_BUFFER, framebufferVBO_);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(GLfloat) * screenVertices.size(),
+        screenVertices.data(),
+        GL_STATIC_DRAW
+    );
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(
+        0,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        4 * sizeof(GLfloat),
+        (void*)0
+    );
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(
+        1,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        4 * sizeof(GLfloat),
+        (GLvoid*)(2 * sizeof(GLfloat))
+    );
+    glBindVertexArray(0);
+
+    glGenFramebuffers(1, &framebuffer_);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+    glGenTextures(1, &framebufferTexture_);
+    glBindTexture(GL_TEXTURE_2D, framebufferTexture_);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGB,
+        width_,
+        height_,
+        0,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        nullptr
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        framebufferTexture_,
+        0
+    );
+    create_renderbuffer();
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        aout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    screenShader_->activate();
+    screenShader_->set_int("screenTexture", 0);
+}
+
+void rndr::Renderer::create_renderbuffer() {
+    glGenRenderbuffers(1, &renderbuffer_);
+    glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer_);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
+    glFramebufferRenderbuffer(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_RENDERBUFFER,
+        renderbuffer_
+    );
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
+void rndr::Renderer::render_framebuffer() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    // clear all relevant buffers
+    glClear(GL_COLOR_BUFFER_BIT);
+    screenShader_->activate();
+    glBindVertexArray(framebufferVAO_);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, framebufferTexture_);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void rndr::Renderer::destroy_framebuffer() {
+    glDeleteFramebuffers(1, &framebuffer_);
+    glDeleteRenderbuffers(1, &renderbuffer_);
+    glDeleteTextures(1, &framebufferTexture_);
+}
+
+void rndr::Renderer::create_shaders() {
+    GLuint programId1 = glCreateProgram();
+    glAttachShader(programId1, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/cube.vert"));
+    glAttachShader(programId1, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/cube.frag"));
+    glLinkProgram(programId1);
+    shader_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId1));
+
+    GLuint programId2 = glCreateProgram();
+    glAttachShader(programId2, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/cube.vert"));
+    glAttachShader(programId2, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/outlined.frag"));
+    glLinkProgram(programId2);
+    outlined_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId2));
+
+    GLuint programId3 = glCreateProgram();
+    glAttachShader(programId3, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/normalVisualization.vert"));
+    glAttachShader(programId3, assetManager_->loadShader(GL_GEOMETRY_SHADER, "shader/normalVisualization.geom"));
+    glAttachShader(programId3, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/normalVisualization.frag"));
+    glLinkProgram(programId3);
+    normalVectorShader_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId3));
+
+    GLuint programId4 = glCreateProgram();
+    glAttachShader(programId4, assetManager_->loadShader(GL_VERTEX_SHADER, "shader/framebuffer_screen.vert"));
+    glAttachShader(programId4, assetManager_->loadShader(GL_FRAGMENT_SHADER, "shader/framebuffer_screen.frag"));
+    glLinkProgram(programId4);
+    screenShader_ = std::unique_ptr<ndk_helper::shdr::Shader>(new ndk_helper::shdr::Shader(programId4));
 }

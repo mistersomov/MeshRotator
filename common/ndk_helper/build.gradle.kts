@@ -12,7 +12,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags += "-std=c++11 -frtti -Wall -Werror"
+                cppFlags += "-std=c++14 -frtti -Wall -Werror"
                 targets += "ndk_helper"
                 arguments(
                     "-DNDK_HELPER_PATH=${project(":common:ndk_helper").projectDir}",
@@ -52,4 +52,10 @@ android {
 
 dependencies {
     api(libs.game.activity)
+
+    // tests
+    implementation(libs.androidx.junit.gtest)
+    implementation(libs.googletest)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext)
 }

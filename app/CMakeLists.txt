@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project("meshrotator")
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 #include the native part of NDKHelper
 add_subdirectory (${NDK_HELPER_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libndk_helper")
 
@@ -23,9 +26,12 @@ include_directories(${ASSIMP_INCLUDE_DIRS})
 link_directories(${ASSIMP_LIBRARY_DIRS})
 set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${ANDROID_ABI}/bin/libassimp.so)
 
+#tests
+find_package(googletest REQUIRED CONFIG)
+find_package(junit-gtest REQUIRED CONFIG)
+
 add_library(meshrotator SHARED
     src/main/cpp/manager/ModelManager.cpp
-    src/main/cpp/manager/AssetManager.cpp
     src/main/cpp/utils/AndroidOut.cpp
     src/main/cpp/Renderer.cpp
     src/main/cpp/main.cpp
@@ -35,12 +41,20 @@ target_include_directories(meshrotator PRIVATE
 )
 target_link_libraries(meshrotator
     ndk_helper
+
     #assimp
     assimp
+
     #glm
     glm
+
     # The game activity
     game-activity::game-activity_static
+
+    #tests
+    googletest::gtest
+    junit-gtest::junit-gtest
+
     EGL
     GLESv3
     android
