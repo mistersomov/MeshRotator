@@ -1,6 +1,5 @@
 #include "Renderer.hpp"
 #include "utils/Utility.hpp"
-
 #include <memory>
 #include <glm/gtc/matrix_transform.hpp>
 #include <exception>
@@ -59,9 +58,9 @@ void rndr::Renderer::render() {
 
         shader_->set_float("material.shininess", 64.0f);
 
-        shader_->set_vec3("pointLight.position", utils::get_light_dir());
+        shader_->set_vec3("pointLight.position", ndk_helper::utils::get_light_dir());
         shader_->set_vec3("pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
-        shader_->set_vec3("pointLight.diffuse", utils::get_light_color());
+        shader_->set_vec3("pointLight.diffuse", ndk_helper::utils::get_light_color());
         shader_->set_vec3("pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
         shader_->set_float("pointLight.constant", 1.0f);
         shader_->set_float("pointLight.linear", 0.09f);
@@ -293,7 +292,7 @@ void rndr::Renderer::create_matrix_uniform_buffer() {
         bufferSize
     );
 
-    glm::mat4 projection = utils::get_projection_matrix(
+    glm::mat4 projection = ndk_helper::utils::get_projection_matrix(
         static_cast<float>(width_),
         static_cast<float>(height_)
     );

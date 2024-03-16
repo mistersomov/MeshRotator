@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(ndk_helper)
 set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 IF(NOT TARGET ndk_helper)
@@ -30,6 +30,7 @@ IF(NOT TARGET ndk_helper)
         src/main/cpp/Model_Impl.cpp
         src/main/cpp/Mesh.cpp
         src/main/cpp/Shader.cpp
+        src/main/cpp/utils/AndroidOut.cpp
     )
     target_link_libraries(ndk_helper
         #assimp
@@ -47,6 +48,9 @@ IF(NOT TARGET ndk_helper)
 
         EGL
         GLESv3
+
+        android
+        log
     )
     set_target_properties(ndk_helper PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY

@@ -1,6 +1,4 @@
 #include "ModelManager.hpp"
-#include "../utils/AndroidOut.h"
-
 #include <exception>
 
 mdlmgr::ModelManager::ModelManager(
