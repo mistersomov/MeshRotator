@@ -10,17 +10,22 @@ namespace ndk_helper {
     namespace assetmgr {
         class AssetManager {
         public:
-            AssetManager(AAssetManager* aasetManager);
+            AssetManager(const AssetManager&) = delete;
+            AssetManager(AssetManager&&) = delete;
+            AssetManager& operator=(const AssetManager&) = delete;
+            AssetManager& operator=(AssetManager&&) = delete;
             ~AssetManager();
 
             const GLuint loadShader(const GLenum type, const std::string& path) const;
-            const ndk_helper::mesh::Texture loadTexture(
-                const std::string& path,
-                const std::string& type
+            const mesh::Texture loadTexture(
+                const mesh::TextureType type,
+                const std::string& path
             ) const;
             const std::string loadModel(const std::string& path) const;
+            static AssetManager& instance(AAssetManager* aasetManager);
 
         private:
+            AssetManager(AAssetManager* aasetManager);
             AAssetManager* aasetManager_;
 
             const GLuint createShaderByType(const GLenum type) const;

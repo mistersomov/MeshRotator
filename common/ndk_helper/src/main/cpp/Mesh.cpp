@@ -7,14 +7,6 @@ ndk_helper::mesh::Mesh::Mesh(
     prepare();
 }
 
-ndk_helper::mesh::Mesh::Mesh(
-     std::vector<Vertex> vertices,
-     std::vector<uint16_t> indices,
-     std::vector<Texture> textures
-) : vertices_{vertices}, indices_{indices}, textures_{textures} {
-    prepare();
-}
-
 void ndk_helper::mesh::Mesh::prepare() {
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
@@ -90,18 +82,10 @@ void ndk_helper::mesh::Mesh::prepare() {
 
 bool ndk_helper::mesh::Mesh::operator==(const mesh::Mesh& other) const {
     return vertices_ == other.vertices_
-           && indices_ == other.indices_
-           && textures_ == other.textures_;
+           && indices_ == other.indices_;
 }
 
-void ndk_helper::mesh::Mesh::draw(ndk_helper::shdr::Shader* shader) const {
-    for (auto i = 0; i != textures_.size(); ++i) {
-        glActiveTexture(GL_TEXTURE0 + i);
-        std::string name = textures_[i].type;
-        shader->set_int("material." + name, i);
-        glBindTexture(GL_TEXTURE_2D, textures_[i].id);
-    }
-
+void ndk_helper::mesh::Mesh::draw() const {
     glBindVertexArray(vao_);
     glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_SHORT, 0);
     glBindVertexArray(0);
