@@ -9,6 +9,7 @@ namespace rndr {
     class Renderer {
         std::unique_ptr<android_app> app_;
         std::unique_ptr<ndk_helper::assetmgr::AssetManager> assetManager_;
+        std::unique_ptr<ndk_helper::timemgr::TimeManager> timeManager_;
         std::unique_ptr<ndk_helper::mdlmgr::ModelManager> modelManager_;
 
         EGLDisplay display_{EGL_NO_DISPLAY};

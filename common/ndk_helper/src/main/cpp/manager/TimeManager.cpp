@@ -2,22 +2,15 @@
 
 #include <cstdlib>
 
-constexpr double NANOS_IN_SEC = 1000000000.0;
-
-ndk_helper::timemgr::TimeManager::TimeManager() {
+ndk_helper::timemgr::TimeManager::TimeManager() noexcept: firstTime_{0.0}, deltaTimeTotal_{0.0} {
     srand(time(nullptr));
-}
-
-ndk_helper::timemgr::TimeManager& ndk_helper::timemgr::TimeManager::instance() {
-    static TimeManager instance;
-    return instance;
 }
 
 double ndk_helper::timemgr::TimeManager::now() {
     timespec timeVal;
     clock_gettime(CLOCK_MONOTONIC, &timeVal);
 
-    return timeVal.tv_sec + timeVal.tv_nsec / NANOS_IN_SEC;
+    return timeVal.tv_sec + timeVal.tv_nsec / 1000000000.0;
 }
 
 float ndk_helper::timemgr::TimeManager::delta() {
@@ -30,5 +23,7 @@ void ndk_helper::timemgr::TimeManager::update_time() {
 }
 
 void ndk_helper::timemgr::TimeManager::reset() {
+    //aout << "Resetting the time manager" << std::endl;
+
     firstTime_ = now();
 }
