@@ -2,10 +2,10 @@
 #include <exception>
 
 bool outlineEnabled;
+auto timeManager = ndk_helper::timemgr::TimeManager::instance();
 
 rndr::Renderer::Renderer(android_app *app): app_{app},
                                             assetManager_{new ndk_helper::assetmgr::AssetManager(app->activity->assetManager)},
-                                            timeManager_{new ndk_helper::timemgr::TimeManager()},
                                             modelManager_{new ndk_helper::mdlmgr::ModelManager(*assetManager_)}
 {
     prepare_graphics();
@@ -33,7 +33,7 @@ rndr::Renderer::~Renderer() {
 }
 
 void rndr::Renderer::render() {
-    timeManager_->update_time();
+    timeManager.update_time();
     auto models = modelManager_->get_models();
 
     for (auto i = models.begin(), end = models.end(); i != end; ++i) {
@@ -45,7 +45,7 @@ void rndr::Renderer::render() {
             glm::translate(glm::mat4(1.0f), i->getPosition())
                 * glm::rotate(
                     glm::mat4(1.0f),
-                    glm::radians(timeManager_->delta() * (-50.0f)),
+                    glm::radians(timeManager.delta() * (-50.0f)),
                     glm::vec3{0.0f, 1.0f, 0.0f}
                 )
                 * glm::scale(glm::mat4(1.0f), i->getScale());
@@ -83,13 +83,13 @@ void rndr::Renderer::render() {
                 glm::translate(glm::mat4(1.0f), i->getPosition())
                 * glm::rotate(
                     glm::mat4(1.0f),
-                    glm::radians(timeManager_->delta() * (-50.0f)),
+                    glm::radians(timeManager.delta() * (-50.0f)),
                     glm::vec3{0.0f, 1.0f, 0.0f}
                 )
                 * glm::scale(glm::mat4(1.0f), scaled*(i->getScale()));
             outlined_->set_mat4("MODEL_VIEW", modelView);
             outlined_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
-            outlined_->set_float("uTime", timeManager_->delta());
+            outlined_->set_float("uTime", timeManager.delta());
             i->draw(*outlined_);
             glEnable(GL_DEPTH_TEST);
             glStencilMask(0xFF);
@@ -263,7 +263,7 @@ void rndr::Renderer::prepare_graphics() {
     aout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
     aout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
 
-    timeManager_->reset();
+    timeManager.reset();
 }
 
 void rndr::Renderer::create_matrix_uniform_buffer() {
