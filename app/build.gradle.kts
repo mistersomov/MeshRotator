@@ -28,6 +28,7 @@ android {
                 cppFlags += "-std=c++11 -frtti -Wall -Werror"
                 arguments(
                     "-DNDK_HELPER_PATH=${project(":common:ndk_helper").projectDir}",
+                    "-DNATIVE_TESTING_PATH=${project(":native-testing").projectDir}",
                     "-DANDROID_STL=c++_static",
                     "-DANDROID_TOOLCHAIN=clang"
                 )
@@ -80,6 +81,7 @@ android {
 dependencies {
     // project
     implementation(project(":common:ndk_helper"))
+    implementation(project(":native-testing"))
 
     // libs
     api(libs.game.activity)

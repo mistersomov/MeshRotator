@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.mistersomov.ndk_helper"
+    namespace = "com.mistersomov.native_testing"
     compileSdk = 34
 
     defaultConfig {
@@ -12,25 +12,24 @@ android {
 
         externalNativeBuild {
             cmake {
-                targets += "ndk_helper"
+                targets += "native_testing"
+                arguments(
+                    "-DNDK_HELPER_PATH=${project(":common:ndk_helper").projectDir}",
+                )
             }
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            isMinifyEnabled = true
         }
     }
     externalNativeBuild {
         cmake {
-            ndkVersion = "26.1.10909125"
             path("CMakeLists.txt")
             version = "3.22.1"
+            ndkVersion = "26.1.10909125"
         }
     }
     compileOptions {
@@ -51,6 +50,4 @@ dependencies {
     // tests
     implementation(libs.androidx.junit.gtest)
     implementation(libs.googletest)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.test.ext)
 }
