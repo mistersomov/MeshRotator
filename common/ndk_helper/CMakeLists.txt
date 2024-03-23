@@ -31,8 +31,8 @@ IF(NOT TARGET ndk_helper)
         src/main/cpp/manager/ModelManager.cpp
         src/main/cpp/manager/AssetManager.cpp
         src/main/cpp/manager/TimeManager.cpp
-        src/main/cpp/Model_Impl.cpp
         src/main/cpp/Mesh.cpp
+        src/main/cpp/Model.cpp
         src/main/cpp/Shader.cpp
     )
     target_link_libraries(ndk_helper
@@ -45,10 +45,6 @@ IF(NOT TARGET ndk_helper)
         # The game activity
         game-activity::game-activity_static
 
-        #tests
-        googletest::gtest
-        junit-gtest::junit-gtest
-
         EGL
         GLESv3
 
@@ -58,34 +54,6 @@ IF(NOT TARGET ndk_helper)
     set_target_properties(ndk_helper PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}"
-    )
-
-    #tests
-    find_package(googletest REQUIRED CONFIG)
-    find_package(junit-gtest REQUIRED CONFIG)
-
-    add_library(native_tests SHARED
-        src/main/cpp/utils/AndroidOut.cpp
-        src/main/cpp/utils/Utility.cpp
-
-        src/main/cpp/Mesh.cpp
-        src/main/cpp/Shader.cpp
-        src/main/cpp/Model_Impl.cpp
-        src/main/cpp/test/Model_ImplTest.cpp
-
-        src/main/cpp/manager/AssetManager.cpp
-        src/main/cpp/manager/ModelManager.cpp
-    )
-    target_link_libraries(native_tests PRIVATE
-        googletest::gmock
-        googletest::gtest
-        junit-gtest::junit-gtest
-        assimp
-        glm
-        EGL
-        GLESv3
-        android
-        log
     )
 
 ENDIF (NOT TARGET ndk_helper)

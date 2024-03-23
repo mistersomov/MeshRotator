@@ -24,7 +24,7 @@ void ndk_helper::mdlmgr::ModelManager::loadModelFromPath(const std::string& path
     process_node(scene->mRootNode, scene);
 }
 
-std::vector<ndk_helper::mdl::Model_Impl> ndk_helper::mdlmgr::ModelManager::get_models() const {
+std::vector<ndk_helper::mdl::Model> ndk_helper::mdlmgr::ModelManager::get_models() const {
     return models_;
 }
 
