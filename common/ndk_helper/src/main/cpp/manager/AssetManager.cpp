@@ -3,13 +3,24 @@
 #include "../utils/AndroidOut.hpp"
 #include <exception>
 
-ndk_helper::assetmgr::AssetManager::AssetManager(AAssetManager* aAssetManager) : aasetManager_{aAssetManager} {}
+ndk_helper::assetmgr::AssetManager::AssetManager(AAssetManager *aasetManager) : aasetManager_{aasetManager} {}
 
 ndk_helper::assetmgr::AssetManager::~AssetManager() {
     if (aasetManager_) {
         aasetManager_ = nullptr;
     }
 }
+
+ndk_helper::assetmgr::AssetManager&
+ndk_helper::assetmgr::AssetManager::instance(AAssetManager *aasetManager) {
+    if (!aasetManager) {
+        throw std::runtime_error("Failed to load asset manager");
+    }
+
+    static AssetManager assetManager{aasetManager};
+    return assetManager;
+}
+
 
 const GLuint ndk_helper::assetmgr::AssetManager::loadShader(
     const GLenum type,
@@ -83,18 +94,18 @@ void ndk_helper::assetmgr::AssetManager::handleShaderCompilationError(const GLui
 }
 
 const ndk_helper::mesh::Texture ndk_helper::assetmgr::AssetManager::loadTexture(
-    const std::string& path,
-    const std::string& type
+    const ndk_helper::mesh::TextureType type,
+    const std::string& path
 ) const {
     try {
         auto buffer = readAssetFromPath(path);
         auto textureID = generateTextureFromMemory(buffer);
 
-        return {textureID, type};
+        return {type, textureID};
     } catch (std::exception& e) {
         aout << e.what() << std::endl;
 
-        return {0, ""};
+        return {mesh::TextureType::NONE, 0};
     }
 }
 

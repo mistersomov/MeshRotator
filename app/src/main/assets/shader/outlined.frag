@@ -4,8 +4,6 @@ precision mediump float;
 
 out vec4 color;
 
-uniform float uTime;
-
 vec3 palette(float t) {
     vec3 a = vec3(0.5, 0.5, 0.5);
     vec3 b = vec3(0.5, 0.5, 0.5);

@@ -3,6 +3,7 @@
 layout(triangles) in;
 layout(line_strip, max_vertices = 6) out;
 layout(std140) uniform Matrices {
+    mat4 VIEW;
     mat4 PROJECTION;
 };
 

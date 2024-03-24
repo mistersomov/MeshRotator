@@ -30,6 +30,9 @@ set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${
 add_library(meshrotator SHARED
     src/main/cpp/Renderer.cpp
     src/main/cpp/main.cpp
+
+    src/main/cpp/scene/Scene.cpp
+    src/main/cpp/scene/MainScene.cpp
 )
 target_include_directories(meshrotator PRIVATE
     ${ndk_helper_SOURCE_DIR}/src/main/cpp
