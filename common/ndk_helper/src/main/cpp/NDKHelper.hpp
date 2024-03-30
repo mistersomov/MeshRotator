@@ -5,6 +5,7 @@
 #include "manager/TimeManager.hpp"
 #include "manager/AssetManager.hpp"
 #include "manager/ModelManager.hpp"
+#include "manager/ShaderManager.hpp"
 #include "utils/AndroidOut.hpp"
 #include "utils/Utility.hpp"
 

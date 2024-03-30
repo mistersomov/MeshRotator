@@ -4,6 +4,7 @@ project(ndk_helper)
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -Wall -Werror")
 
 IF(NOT TARGET ndk_helper)
     #gameActivity
@@ -31,6 +32,8 @@ IF(NOT TARGET ndk_helper)
         src/main/cpp/manager/ModelManager.cpp
         src/main/cpp/manager/AssetManager.cpp
         src/main/cpp/manager/TimeManager.cpp
+        src/main/cpp/manager/ShaderManager.cpp
+
         src/main/cpp/Mesh.cpp
         src/main/cpp/Model.cpp
         src/main/cpp/Shader.cpp
