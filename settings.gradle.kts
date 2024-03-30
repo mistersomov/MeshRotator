@@ -16,5 +16,6 @@ dependencyResolutionManagement {
 rootProject.name = "Mesh Rotator"
 include(
     ":app",
-    ":common:ndk_helper"
+    ":common:ndk_helper",
+    ":native-testing"
 )

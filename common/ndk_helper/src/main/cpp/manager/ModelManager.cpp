@@ -2,12 +2,15 @@
 #include "../utils/AndroidOut.hpp"
 #include <exception>
 
-ndk_helper::mdlmgr::ModelManager::ModelManager(
-    ndk_helper::assetmgr::AssetManager& assetManager
-) : assetManager_{std::unique_ptr<ndk_helper::assetmgr::AssetManager>{new assetmgr::AssetManager{assetManager}}} {}
+ndk_helper::mdlmgr::ModelManager::ModelManager(AssetManager& assetManager) : assetManager_{assetManager} {}
 
-void ndk_helper::mdlmgr::ModelManager::loadModelFromPath(const std::string& path) {
-    auto modelAsset = assetManager_->loadModel(path);
+ndk_helper::mdlmgr::ModelManager& ndk_helper::mdlmgr::ModelManager::instance(AssetManager &assetManager) {
+    static ModelManager modelManager{assetManager};
+    return modelManager;
+}
+
+ndk_helper::mdl::Model ndk_helper::mdlmgr::ModelManager::getModelFromPath(const std::string& path) {
+    auto modelAsset = assetManager_.loadModel(path);
     Assimp::Importer importer;
     auto scene = importer.ReadFileFromMemory(
         modelAsset.data(),
@@ -21,20 +24,38 @@ void ndk_helper::mdlmgr::ModelManager::loadModelFromPath(const std::string& path
         aout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
         throw importer.GetException();
     }
-    process_node(scene->mRootNode, scene);
+    mdl::Model model;
+    process_node(model, scene->mRootNode, scene);
+
+    return model;
 }
 
-std::vector<ndk_helper::mdl::Model_Impl> ndk_helper::mdlmgr::ModelManager::get_models() const {
-    return models_;
+void ndk_helper::mdlmgr::ModelManager::applyTextures(
+    ndk_helper::mdl::Model& model,
+    std::map<mesh::TextureType, std::string> textures
+) {
+    std::for_each(
+        textures.begin(),
+        textures.end(),
+        [&](const std::pair<mesh::TextureType, std::string&> texture
+    ) {
+        model.addTexture(assetManager_.loadTexture(texture.first, texture.second));
+    });
 }
 
-void ndk_helper::mdlmgr::ModelManager::process_node(aiNode* node, const aiScene* scene) {
+void ndk_helper::mdlmgr::ModelManager::process_node(
+    mdl::Model& model,
+    aiNode* node,
+    const aiScene* scene
+) {
     for (auto i = 0; i != node->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[node->mMeshes[i]];
-        models_.push_back(process_mesh(mesh));
+        auto processedMesh = process_mesh(mesh);
+
+        model.addMesh(processedMesh);
     }
     for (auto i = 0; i != node->mNumChildren; ++i) {
-        process_node(node->mChildren[i], scene);
+        process_node(model,node->mChildren[i], scene);
     }
 }
 
@@ -69,32 +90,7 @@ ndk_helper::mesh::Mesh ndk_helper::mdlmgr::ModelManager::process_mesh(aiMesh* me
             indices.emplace_back(face.mIndices[j]);
     }
 
-    return {vertices, indices, process_textures()};
-}
-
-std::vector<ndk_helper::mesh::Texture> ndk_helper::mdlmgr::ModelManager::process_textures() {
-    std::vector<ndk_helper::mesh::Texture> textures;
-    auto diffuse =
-            assetManager_->loadTexture("model/pillar/pillar_1_BaseColor.png", "diffuse");
-    textures.emplace_back(diffuse);
-
-    auto normal =
-            assetManager_->loadTexture("model/pillar/pillar_1_NormaL_GL.png", "normal");
-    textures.emplace_back(normal);
-
-    return textures;
-}
-
-void ndk_helper::mdlmgr::ModelManager::translate(glm::vec3 newPosition) {
-    std::for_each( models_.begin(), models_.end(), [newPosition](ndk_helper::mdl::Model& model){
-        model.setPosition(newPosition);
-    });
-}
-
-void ndk_helper::mdlmgr::ModelManager::scale(glm::vec3 newScale) {
-    std::for_each( models_.begin(), models_.end(), [newScale](ndk_helper::mdl::Model& model){
-        model.setScale(newScale);
-    });
+    return {vertices, indices};
 }
 
 glm::vec3 ndk_helper::mdlmgr::ModelManager::applyPosition(aiVector3D position) {

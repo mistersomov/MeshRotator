@@ -1,10 +1,9 @@
 #ifndef MESHROTATOR_MESH_HPP
 #define MESHROTATOR_MESH_HPP
 
-#include "Shader.hpp"
-
+#include <glm/glm.hpp>
+#include <GLES3/gl32.h>
 #include <vector>
-#include <string>
 
 namespace ndk_helper {
     namespace mesh {
@@ -24,34 +23,39 @@ namespace ndk_helper {
             };
         };
 
-        struct Texture {
-            uint32_t id;
-            std::string type;
+        enum class TextureType {
+            NONE,
+            DIFFUSE,
+            NORMAL
+        };
 
-            bool operator==(const mesh::Texture& other) const {
-                return id == other.id
-                    && type == other.type;
+        struct Texture {
+            TextureType type;
+            uint32_t id;
+
+            bool operator==(const Texture& other) const {
+                return static_cast<uint32_t>(type) == static_cast<uint32_t>(other.type)
+                    && id == other.id;
             };
         };
 
         class Mesh {
+        public:
+            Mesh(std::vector<Vertex>, std::vector<uint16_t>);
+
+            bool operator==(const Mesh& other) const;
+
+            void draw() const;
+
+        private:
             GLuint vao_{0};
             GLuint vbo_{0};
             GLuint ebo_{0};
 
             std::vector<Vertex> vertices_;
             std::vector<uint16_t> indices_;
-            std::vector<Texture> textures_;
 
             void prepare();
-
-        public:
-            Mesh(std::vector<mesh::Vertex>, std::vector<uint16_t>);
-            Mesh(std::vector<mesh::Vertex>, std::vector<uint16_t>, std::vector<Texture>);
-
-            bool operator==(const mesh::Mesh& other) const;
-
-            void draw(ndk_helper::shdr::Shader*) const;
         };
     }
 }

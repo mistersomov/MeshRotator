@@ -12,12 +12,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags += "-std=c++11 -frtti -Wall -Werror"
                 targets += "ndk_helper"
-                arguments(
-                    "-DNDK_HELPER_PATH=${project(":common:ndk_helper").projectDir}",
-                    "-DANDROID_STL=c++_static",
-                    "-DANDROID_TOOLCHAIN=clang")
             }
         }
     }

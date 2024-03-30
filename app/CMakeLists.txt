@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #include the native part of NDKHelper
-add_subdirectory (${NDK_HELPER_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libndk_helper")
+add_subdirectory(${NDK_HELPER_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libndk_helper")
+add_subdirectory(${NATIVE_TESTING_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libnative_testing")
 
 #gameActivity
 find_package(game-activity REQUIRED CONFIG)
@@ -26,19 +27,20 @@ include_directories(${ASSIMP_INCLUDE_DIRS})
 link_directories(${ASSIMP_LIBRARY_DIRS})
 set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${ASSIMP_DIR}/build/${ANDROID_ABI}/bin/libassimp.so)
 
-#tests
-find_package(googletest REQUIRED CONFIG)
-find_package(junit-gtest REQUIRED CONFIG)
-
 add_library(meshrotator SHARED
     src/main/cpp/Renderer.cpp
     src/main/cpp/main.cpp
+
+    src/main/cpp/scene/Scene.cpp
+    src/main/cpp/scene/MainScene.cpp
 )
 target_include_directories(meshrotator PRIVATE
     ${ndk_helper_SOURCE_DIR}/src/main/cpp
+    ${native_testing_SOURCE_DIR}/src/main/cpp
 )
 target_link_libraries(meshrotator
     ndk_helper
+    native_testing
 
     #assimp
     assimp
@@ -48,10 +50,6 @@ target_link_libraries(meshrotator
 
     # The game activity
     game-activity::game-activity_static
-
-    #tests
-    googletest::gtest
-    junit-gtest::junit-gtest
 
     EGL
     GLESv3

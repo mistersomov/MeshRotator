@@ -6,15 +6,17 @@
 namespace ndk_helper {
     namespace timemgr {
         class TimeManager {
-            double firstTime_;
-            float deltaTimeTotal_;
         public:
-            TimeManager() noexcept;
+            TimeManager();
 
             double now();
-            float delta();
+            float delta() const;
             void update_time();
             void reset();
+
+        private:
+            double firstTime_{0.0};
+            float deltaTimeTotal_{0.0};
         };
     }
 }
