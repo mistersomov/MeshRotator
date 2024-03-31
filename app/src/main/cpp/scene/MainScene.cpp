@@ -146,8 +146,8 @@ void scene::MainScene::initUniformBuffers() {
 }
 
 void scene::MainScene::initModels() {
-    addPillar();
-    addBrokenPillar();
+    //addPillar();
+    //addBrokenPillar();
     addAircraft();
 }
 

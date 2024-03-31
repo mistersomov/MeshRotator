@@ -5,6 +5,7 @@ import com.mistersomov.convention.utils.libs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.provideDelegate
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 
@@ -29,6 +30,10 @@ internal fun Project.configureKotlinAndroid(
                 "-opt-in=kotlinx.coroutines.FlowPreview",
             )
             jvmTarget = JavaVersion.VERSION_1_8.toString()
+        }
+        dependencies {
+            add("implementation", libs.findLibrary("kotlinx-coroutines-core").get())
+            add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
         }
     }
 }
