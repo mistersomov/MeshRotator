@@ -71,6 +71,7 @@ android {
 dependencies {
     // project
     implementation(project(":common:ndk_helper"))
+    implementation(project(":common:design"))
     implementation(project(":native-testing"))
 
     // libs

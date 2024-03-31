@@ -79,3 +79,13 @@ googleServices = { id = "com.google.gms.google-services", version.ref = "google-
 firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+
+[bundles]
+compose = [
+    "compose-foundation",
+    "compose-ui",
+    "compose-ui-tooling",
+    "compose-ui-tooling-preview",
+    "compose-ui-test-manifest",
+    "compose-material3"
+]
