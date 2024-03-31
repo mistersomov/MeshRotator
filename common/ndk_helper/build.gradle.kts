@@ -1,29 +1,15 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
+    id("com.mistersomov.library")
 }
 
 android {
     namespace = "com.mistersomov.ndk_helper"
-    compileSdk = 34
 
     defaultConfig {
-        minSdk = 28
-
         externalNativeBuild {
             cmake {
                 targets += "ndk_helper"
             }
-        }
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
     externalNativeBuild {
@@ -32,13 +18,6 @@ android {
             path("CMakeLists.txt")
             version = "3.22.1"
         }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
     buildFeatures {
         prefab = true

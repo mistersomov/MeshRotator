@@ -1,8 +1,8 @@
 import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid)
+    id("com.mistersomov.app")
+    id("com.mistersomov.app.compose")
     alias(libs.plugins.ksp)
     alias(libs.plugins.googleServices)
     alias(libs.plugins.firebaseCrashlytics)
@@ -13,14 +13,11 @@ val appNameProd = "MeshRotator"
 
 android {
     namespace = "com.mistersomov.meshrotator"
-    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.mistersomov.meshrotator"
-        minSdk = 28
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
@@ -35,7 +32,13 @@ android {
             }
         }
     }
-
+    externalNativeBuild {
+        cmake {
+            ndkVersion = "26.1.10909125"
+            path = file("CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
     buildTypes {
         getByName("debug") {
             applicationIdSuffix = ".dev"
@@ -58,22 +61,9 @@ android {
             }
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures {
-        prefab = true
-        //compose = true
-    }
-    externalNativeBuild {
-        cmake {
-            ndkVersion = "26.1.10909125"
-            path = file("CMakeLists.txt")
-            version = "3.22.1"
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
@@ -89,10 +79,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
-
-    //compose
-    //implementation(platform(libs.compose.bom))
-    //implementation(libs.material3)
 
     // analytics
     api(platform(libs.firebase.bom))
