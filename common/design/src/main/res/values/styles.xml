@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Joystick">
+        <item name="android:layout_width">@dimen/joystick_size</item>
+        <item name="android:layout_height">@dimen/joystick_size</item>
+        <item name="android:layout_marginStart">@dimen/margin_16dp</item>
+        <item name="android:layout_marginBottom">@dimen/margin_16dp</item>
+    </style>
+</resources>
