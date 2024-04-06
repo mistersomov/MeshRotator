@@ -33,6 +33,7 @@ add_library(meshrotator SHARED
     src/main/cpp/scene/Scene.cpp
     src/main/cpp/scene/MainScene.cpp
     src/main/cpp/scene/Skybox.cpp
+    src/main/cpp/model/aircraft/Aircraft.cpp
 )
 target_include_directories(meshrotator PRIVATE
     ${ndk_helper_SOURCE_DIR}/src/main/cpp

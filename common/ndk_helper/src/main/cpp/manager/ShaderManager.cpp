@@ -1,5 +1,6 @@
 #include "ShaderManager.hpp"
 #include "AssetManager.hpp"
+#include "../utils/Utility.hpp"
 
 ndk_helper::shdrmgr::ShaderManager::ShaderManager(AssetManager& assetManager) : assetManager_{assetManager} {}
 
@@ -46,5 +47,5 @@ std::unique_ptr<ndk_helper::shdr::Shader> ndk_helper::shdrmgr::ShaderManager::ge
         glDeleteShader(gShader);
     }
 
-    return std::unique_ptr<Shader>(new Shader{programId});
+    return ndk_helper::utils::make_unique<Shader>(programId);
 }

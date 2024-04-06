@@ -12,7 +12,7 @@ glm::mat4 ndk_helper::utils::get_projection_matrix(const float width, const floa
 glm::mat4 ndk_helper::utils::get_view_matrix(glm::vec3 viewPos) {
     return glm::lookAt(
         viewPos,
-        glm::vec3(0.0f),
+        glm::vec3{0.0f, 4.0f, -1.0f},
         glm::vec3{0.0f, 1.0f, 0.0f}
     );
 }

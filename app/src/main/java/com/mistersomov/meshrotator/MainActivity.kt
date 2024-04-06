@@ -53,11 +53,11 @@ class MainActivity : GameActivity() {
     private fun attachJoystick() {
         binding.vJoystick.apply {
             setContent {
-                VirtualJoystick { _, _ ->
-
-                }
+                VirtualJoystick(onJoystickMoved = ::updateAircraftAngle)
             }
         }
         addContentView(binding.root, LayoutParams(MATCH_PARENT, MATCH_PARENT))
     }
+
+    private external fun updateAircraftAngle(x: Float, y: Float);
 }

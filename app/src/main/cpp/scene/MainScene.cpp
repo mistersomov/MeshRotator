@@ -1,14 +1,31 @@
 #include "MainScene.hpp"
+#include "../model/aircraft/Aircraft.hpp"
 #include <map>
 #include <algorithm>
+#include <jni.h>
+
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/norm.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 // Position of the camera
 constexpr float VIEW_POS_X = 0.0f;
-constexpr float VIEW_POS_Y = 0.0f;
-constexpr float VIEW_POS_Z = 10.0f;
+constexpr float VIEW_POS_Y = 2.0f;
+constexpr float VIEW_POS_Z = 12.0f;
 
-//Physics constants
-constexpr float TURBULENCE = 5.0f;
+constexpr float TO_RADIANS = M_PI / 180.0f;
+
+// Angle constants
+constexpr float MAX_PITCH = 25.0f * TO_RADIANS;
+constexpr float MAX_ROLL = 50.0f * TO_RADIANS;
+float pos_x = 0;
+//constexpr float MAX_AILERON_PITCH = 35.0f * TO_RADIANS;
+//constexpr float MAX_ELEVATOR_PITCH = 45.0f * TO_RADIANS;
+
+// Propeller constants
+//constexpr float PROP_ROT_SPEED = 1000.0f;
+
+glm::quat fuselageQuat;
 
 scene::MainScene::MainScene(
     float width,
@@ -49,43 +66,29 @@ void scene::MainScene::doFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilMask(0xFF);
-    std::for_each(
-        models_.begin(),
-        models_.end(),
-        [this](Model& model) {
-            renderModels(model);
-        }
-    );
-    skybox_->onDraw(skyboxShader_.get());
-    renderFramebuffer();
-}
-
-void scene::MainScene::renderModels(scene::Model &model) const {
+    aircraftShader_->activate();
+    aircraftShader_->set_vec3("viewPos", viewPos_);
+    aircraftShader_->set_vec3("lightPos", ndk_helper::utils::get_light_dir());
+    aircraftShader_->set_float("material.shininess", 64.0f);
     glm::mat4 modelMat =
-        glm::translate(
-            identityMat_,
-            glm::vec3{
-                model.getPosition().x,
-                model.getPosition().y,
-                sin(timeManager_.delta() * 2.0f * model.getPosition().z)
-            }
-        )
-            * glm::rotate(
-                identityMat_,
-                glm::radians(sin(timeManager_.delta() * TURBULENCE)),
-                glm::vec3{0.0f, 0.0f, 1.0f}
+            glm::translate(
+                aircraft_->identityMat_,
+                aircraft_->transformation_.position_
             )
-            * glm::scale(identityMat_, model.getScale());
-
-    pillarShader_->activate();
-    pillarShader_->set_mat4("MODEL", modelMat);
-    pillarShader_->set_vec3("viewPos", viewPos_);
-    pillarShader_->set_vec3("lightPos", ndk_helper::utils::get_light_dir());
-    pillarShader_->set_float("material.shininess", 64.0f);
-    model.draw(*(pillarShader_.get()));
+            * glm::mat4_cast(fuselageQuat)
+            * glm::scale(aircraft_->identityMat_, aircraft_->transformation_.scale_);
+    aircraftShader_->set_mat4("MODEL", modelMat);
+    std::vector<glm::mat4> transforms;
+    aircraft_->getBoneTransforms(timeManager_.delta(), transforms);
+    for (uint32_t i = 0; i != transforms.size(); ++i) {
+        aircraftShader_->set_mat4("BONES[" + std::to_string(i) + "]", transforms[i]);
+    }
+    aircraft_->onDraw();
+    skybox_->onDraw(skyboxShader_.get());
+    onDrawFramebuffer();
 }
 
-void scene::MainScene::renderFramebuffer() const {
+void scene::MainScene::onDrawFramebuffer() const {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -99,8 +102,8 @@ void scene::MainScene::renderFramebuffer() const {
 
 void scene::MainScene::initShaders() {
     ShaderManager& shaderManager = ShaderManager::instance(AssetManager::instance(aAssetManager_));
-    pillarShader_ = shaderManager.getShader(
-        "shader/baseLighting.vert",
+    aircraftShader_ = shaderManager.getShader(
+        "shader/skinning.vert",
         "shader/baseLighting.frag"
     );
     outlineShader_ =  shaderManager.getShader(
@@ -124,8 +127,8 @@ void scene::MainScene::initShaders() {
 
 void scene::MainScene::initUniformBuffers() {
     unsigned int uniformBlockIndexPillar =
-            glGetUniformBlockIndex(pillarShader_->id_, "Matrices");
-    glUniformBlockBinding(pillarShader_->id_, uniformBlockIndexPillar, 0);
+            glGetUniformBlockIndex(aircraftShader_->id_, "Matrices");
+    glUniformBlockBinding(aircraftShader_->id_, uniformBlockIndexPillar, 0);
 
     size_t bufferSize = 2 * sizeof(glm::mat4);
     glGenBuffers(1, &uboMatrices_);
@@ -165,51 +168,27 @@ void scene::MainScene::initUniformBuffers() {
 }
 
 void scene::MainScene::initModels() {
-    //addPillar();
-    //addBrokenPillar();
     addAircraft();
 }
 
-void scene::MainScene::addPillar() {
-    ModelManager& modelManager = ModelManager::instance(AssetManager::instance(aAssetManager_));
-    auto pillar = modelManager.getModelFromPath("model/pillar/pillarsSF.obj");
-    auto textures = std::map<ndk_helper::mesh::TextureType, std::string>{
-        {ndk_helper::mesh::TextureType::DIFFUSE, "model/pillar/pillar_1_BaseColor.png"},
-        {ndk_helper::mesh::TextureType::NORMAL, "model/pillar/pillar_1_NormaL_GL.png"}
-    };
-
-    modelManager.applyTextures(pillar, textures);
-    pillar.setPosition({-8.0f, 0.0f, -1.0f});
-    pillar.setScale(glm::vec3(1.0f));
-    models_.emplace_back(pillar);
-}
-
-void scene::MainScene::addBrokenPillar() {
-    ModelManager& modelManager = ModelManager::instance(AssetManager::instance(aAssetManager_));
-    auto pillar = modelManager.getModelFromPath("model/pillar/pillarsSmallSF.obj");
-    auto textures = std::map<ndk_helper::mesh::TextureType, std::string>{
-        {ndk_helper::mesh::TextureType::DIFFUSE, "model/pillar/BrokenPillar_BaseColor.png"},
-        {ndk_helper::mesh::TextureType::NORMAL, "model/pillar/BrokenPillar_NormaL_GL.png"}
-    };
-
-    modelManager.applyTextures(pillar, textures);
-    pillar.setPosition({5.0f, 0.0f, -2.0f});
-    pillar.setScale(glm::vec3(1.0f));
-    models_.emplace_back(pillar);
-}
-
 void scene::MainScene::addAircraft() {
-    ModelManager& modelManager = ModelManager::instance(AssetManager::instance(aAssetManager_));
-    auto aircraft = modelManager.getModelFromPath("model/aircraft/piper.obj");
-    auto textures = std::map<ndk_helper::mesh::TextureType, std::string>{
-        {ndk_helper::mesh::TextureType::DIFFUSE, "model/aircraft/piper_diffuse.jpg"},
-        {ndk_helper::mesh::TextureType::NORMAL, "model/aircraft/piper_diffuse.jpg"}
-    };
-
-    modelManager.applyTextures(aircraft, textures);
-    aircraft.setPosition({0.0f, -4.0f, -1.0f});
-    aircraft.setScale(glm::vec3(1.0f));
-    models_.emplace_back(aircraft);
+    aircraft_ = std::unique_ptr<model::Aircraft>(new model::Aircraft(aAssetManager_));
+    aircraftShader_->activate();
+    for (uint32_t i = 0; i != aircraft_->textures_.size(); ++i) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        std::string name;
+        if (aircraft_->textures_[i].type == ndk_helper::core::TextureType::DIFFUSE) {
+            name = "diffuse";
+        } else if (aircraft_->textures_[i].type == ndk_helper::core::TextureType::SPECULAR) {
+            name = "specular";
+        } else {
+            name = "normal";
+        }
+        aircraftShader_->set_int("material." + name, i);
+        glBindTexture(GL_TEXTURE_2D, aircraft_->textures_[i].id);
+    }
+    obstacle_ = std::unique_ptr<CoreModel>(new CoreModel("model/aircraft/torus.obj", aAssetManager_));
+    obstacle_->transformation_.position_.z = -90.0f;
 }
 
 void scene::MainScene::destroyUniformBuffers() {
@@ -217,48 +196,69 @@ void scene::MainScene::destroyUniformBuffers() {
 }
 
 void scene::MainScene::initLights() {
-    addPointLights();
     addDirectionalLights();
+    //addPointLights();
 }
 
 void scene::MainScene::addPointLights() const {
-    pillarShader_->activate();
-    pillarShader_->set_vec3("pointLight.position", ndk_helper::utils::get_light_dir());
-    pillarShader_->set_vec3("pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
-    pillarShader_->set_vec3("pointLight.diffuse", ndk_helper::utils::get_light_color());
-    pillarShader_->set_vec3("pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
-    pillarShader_->set_float("pointLight.constant", 1.0f);
-    pillarShader_->set_float("pointLight.linear", 0.09f);
-    pillarShader_->set_float("pointLight.quadratic", 0.032f);
+    aircraftShader_->activate();
+    aircraftShader_->set_vec3("pointLight.position", ndk_helper::utils::get_light_dir());
+    aircraftShader_->set_vec3("pointLight.ambient", glm::vec3{0.2f, 0.2f, 0.2f});
+    aircraftShader_->set_vec3("pointLight.diffuse", ndk_helper::utils::get_light_color());
+    aircraftShader_->set_vec3("pointLight.specular", glm::vec3{1.0f, 1.0f, 1.0f});
+    aircraftShader_->set_float("pointLight.constant", 1.0f);
+    aircraftShader_->set_float("pointLight.linear", 0.09f);
+    aircraftShader_->set_float("pointLight.quadratic", 0.032f);
 }
 
 void scene::MainScene::addDirectionalLights() const {
-    pillarShader_->activate();
-    pillarShader_->set_vec3("dirLight.direction", glm::vec3{1.0f, -2.0f, -1.0f});
-    pillarShader_->set_vec3("dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
-    pillarShader_->set_vec3("dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
-    pillarShader_->set_vec3("dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});
+    aircraftShader_->activate();
+    aircraftShader_->set_vec3("dirLight.direction", glm::vec3{-0.2f, -1.0f, -0.3f});
+    aircraftShader_->set_vec3("dirLight.ambient", glm::vec3{0.05f, 0.05f, 0.05f});
+    aircraftShader_->set_vec3("dirLight.diffuse", glm::vec3{0.4f, 0.4f, 0.4f});
+    aircraftShader_->set_vec3("dirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});
 }
 
-void scene::MainScene::renderOutline(Model& model) const {
-    float scaled = 1.05f;
-    glm::mat4 modelMat =
-        glm::translate(identityMat_, model.getPosition())
-            * glm::rotate(
-                identityMat_,
-                glm::radians(timeManager_.delta()*(-50.0f)),
-                glm::vec3{0.0f, 1.0f, 0.0f}
-            )
-            * glm::scale(identityMat_, scaled*(model.getScale()));
+void scene::MainScene::renderOutline(CoreModel& model) const {
+//    float scaled = 1.05f;
+//    glm::mat4 modelMat =
+//        glm::translate(identityMat_, model.getPosition())
+//            * glm::rotate(
+//                identityMat_,
+//                glm::radians(timeManager_.delta()*(-50.0f)),
+//                glm::vec3{0.0f, 1.0f, 0.0f}
+//            )
+//            * glm::scale(identityMat_, scaled*(model.getScale()));
+//
+//    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+//    glStencilMask(0x00);
+//    glDisable(GL_DEPTH_TEST);
+//    outlineShader_->activate();
+//    outlineShader_->set_mat4("MODEL", modelMat);
+//    outlineShader_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
+//    model.draw(*(outlineShader_.get()));
+//    glEnable(GL_DEPTH_TEST);
+//    glStencilMask(0xFF);
+//    glStencilFunc(GL_ALWAYS, 0, 0xFF);
+}
 
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilMask(0x00);
-    glDisable(GL_DEPTH_TEST);
-    outlineShader_->activate();
-    outlineShader_->set_mat4("MODEL", modelMat);
-    outlineShader_->set_vec3("viewPos", glm::vec3{0.0f, 0.0f, 0.0f});
-    model.draw(*(outlineShader_.get()));
-    glEnable(GL_DEPTH_TEST);
-    glStencilMask(0xFF);
-    glStencilFunc(GL_ALWAYS, 0, 0xFF);
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_mistersomov_meshrotator_MainActivity_updateAircraftAngle(JNIEnv *env, jobject thiz,
+                                                                  jfloat x, jfloat y) {
+    float pitch = M_PI_2 * y;
+    float roll = -M_PI_2 * x;
+    //float aileronLeftPitch = M_PI_2 * x;
+    if (x == 0.0f && y == 0.0f) {
+        pitch = 0.0f;
+        roll = 0.0f;
+        //aileronLeftPitch = 0.0f;
+    }
+    float clampedPitch = glm::clamp(pitch, -MAX_PITCH, MAX_PITCH);
+    float clampedRoll = glm::clamp(roll, -MAX_ROLL, MAX_ROLL);
+//    float clampedAileronLeftPitch = glm::clamp(aileronLeftPitch, -MAX_AILERON_PITCH, MAX_AILERON_PITCH);
+//    float clampedElevatorPitch = glm::clamp(pitch, -MAX_ELEVATOR_PITCH, MAX_ELEVATOR_PITCH);
+
+    fuselageQuat = glm::quat_cast(glm::yawPitchRoll(0.0f, clampedPitch, clampedRoll));
+    pos_x = x;
 }

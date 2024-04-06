@@ -73,7 +73,6 @@ void ndk_helper::core::CoreBody::countVerticesAndIndices() {
         meshes_[i].numIndices = pScene_->mMeshes[i]->mNumFaces * 3;
         meshes_[i].baseVertex = numVertices_;
         meshes_[i].baseIndex = numIndices_;
-
         numVertices_ += pScene_->mMeshes[i]->mNumVertices;
         numIndices_ += meshes_[i].numIndices;
     }

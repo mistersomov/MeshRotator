@@ -2,14 +2,14 @@
 #define MESHROTATOR_MAINSCENE_HPP
 
 #include "Scene.hpp"
+#include "../model/aircraft/Aircraft.hpp"
 #include "Skybox.hpp"
 #include "NDKHelper.hpp"
 
 namespace scene {
     using AssetManager = ndk_helper::assetmgr::AssetManager;
     using TimeManager = ndk_helper::timemgr::TimeManager;
-    using ModelManager = ndk_helper::mdlmgr::ModelManager;
-    using Model = ndk_helper::mdl::Model;
+    using CoreModel = ndk_helper::core::CoreBody;
     using ShaderManager = ndk_helper::shdrmgr::ShaderManager;
     using Shader = ndk_helper::shdr::Shader;
 
@@ -36,30 +36,25 @@ namespace scene {
         AAssetManager* aAssetManager_;
         TimeManager timeManager_;
 
-        std::vector<Model> models_;
-
-        std::unique_ptr<Shader> pillarShader_;
+        std::unique_ptr<Shader> aircraftShader_;
         std::unique_ptr<Shader> outlineShader_;
         std::unique_ptr<Shader> screenShader_;
         std::unique_ptr<Shader> skyboxShader_;
 
+        std::unique_ptr<model::Aircraft> aircraft_;
+        std::unique_ptr<CoreModel> obstacle_;
         std::unique_ptr<Skybox> skybox_;
 
         glm::vec3 viewPos_;
-        glm::mat4 identityMat_ = glm::mat4(1.0f);
 
         GLuint uboMatrices_;
 
-        //TODO Think about SOLID here
-        void renderModels(Model& model) const;
-        void renderFramebuffer() const;
+        void onDrawFramebuffer() const;
         void destroyUniformBuffers();
-        void addPillar();
-        void addBrokenPillar();
         void addAircraft();
         void addPointLights() const;
         void addDirectionalLights() const;
-        void renderOutline(Model& model) const;
+        void renderOutline(CoreModel& model) const;
     };
 }
 

@@ -93,25 +93,6 @@ void ndk_helper::assetmgr::AssetManager::handleShaderCompilationError(const GLui
     glDeleteShader(shader);
 }
 
-const ndk_helper::mesh::Texture ndk_helper::assetmgr::AssetManager::loadTexture2D(
-    const mesh::TextureType type,
-    const std::string& path
-) const {
-    try {
-        auto buffer = readAssetFromPath(path);
-        int width, height, numberOfChannels;
-        auto data = generateTextureFromMemory(buffer, width, height, numberOfChannels);
-        const GLenum format = getImageFormat(numberOfChannels);
-        auto textureID = createTexture2D(format, width, height, data);
-
-        return {type, textureID};
-    } catch (std::exception& e) {
-        aout << e.what() << std::endl;
-
-        return {mesh::TextureType::NONE, 0};
-    }
-}
-
 const ndk_helper::core::Texture
 ndk_helper::assetmgr::AssetManager::loadTexture2D(
     const ndk_helper::core::TextureType type,

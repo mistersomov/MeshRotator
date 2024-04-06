@@ -73,24 +73,26 @@ android {
             configure<CrashlyticsExtension> {
                 nativeSymbolUploadEnabled = true
             }
-            applicationVariants.configureEach {
-                val date = Date()
-                val formattedDate = SimpleDateFormat("yyyy-MM-dd").format(date)
-                val apkName = "${appNameProd}-${defaultConfig.versionName}-${formattedDate}.apk"
-
-                outputs.configureEach {
-                    buildOutputs.all {
-                        val output =
-                            this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-                        output.outputFileName = apkName
-                    }
-                }
-            }
         }
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    applicationVariants.configureEach {
+        outputs.configureEach {
+            buildOutputs.configureEach {
+                val date = Date()
+                val formattedDate = SimpleDateFormat("yyyy-MM-dd").format(date)
+                val apkName =
+                    "${appNameProd}-" +
+                            "${defaultConfig.versionName}-" +
+                            "${formattedDate}-" +
+                            "${buildType.name}.apk"
+                val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                output.outputFileName = apkName
+            }
         }
     }
 }

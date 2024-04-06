@@ -1,7 +1,7 @@
 #ifndef MESHROTATOR_ASSETMANAGER_HPP
 #define MESHROTATOR_ASSETMANAGER_HPP
 
-#include "../Mesh.hpp"
+#include "../Shader.hpp"
 #include "../core/Texture.hpp"
 #include "../third_party/stb/stb_image.h"
 #include <android/asset_manager.h>
@@ -18,10 +18,6 @@ namespace ndk_helper {
             ~AssetManager();
 
             const GLuint loadShader(const GLenum type, const std::string& path) const;
-            const mesh::Texture loadTexture2D(
-                const mesh::TextureType type,
-                const std::string& path
-            ) const;
             const core::Texture loadTexture2D(
                 const core::TextureType type,
                 const std::string& path

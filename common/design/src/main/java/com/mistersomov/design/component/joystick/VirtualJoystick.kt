@@ -82,12 +82,11 @@ fun VirtualJoystick(
                                 onJoystickMoved(xPercent, yPercent)
                             }
                         }
-
                         else -> {
                             scope.launch { joystickAlpha.animateTo(ALPHA_DEFAULT) }
                             knobX.floatValue = centerX
                             knobY.floatValue = centerY
-                            onJoystickMoved(centerX, centerY)
+                            onJoystickMoved(0.0f, 0.0f)
                         }
                     }
                     true

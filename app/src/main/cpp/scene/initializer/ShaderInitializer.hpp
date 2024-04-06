@@ -9,7 +9,6 @@ namespace scene {
     protected:
         virtual void initShaders() = 0;
         virtual void initUniformBuffers() = 0;
-
     };
 }
 
