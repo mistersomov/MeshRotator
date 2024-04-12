@@ -18,6 +18,5 @@ rootProject.name = "Mesh Rotator"
 include(
     ":app",
     ":common:ndk_helper",
-    ":common:design",
-    ":native-testing"
+    ":common:design"
 )
