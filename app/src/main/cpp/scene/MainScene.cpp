@@ -20,7 +20,15 @@ scene::MainScene::MainScene(
     timeManager_{std::move(timeManager)},
     viewPos_{VIEW_POS_X, VIEW_POS_Y, VIEW_POS_Z}
 {
-
+    std::vector<std::string> skyboxFaces = {
+        "texture/cubemap/px.png",
+        "texture/cubemap/nx.png",
+        "texture/cubemap/py.png",
+        "texture/cubemap/ny.png",
+        "texture/cubemap/pz.png",
+        "texture/cubemap/nz.png",
+    };
+    skybox_ = std::unique_ptr<Skybox>(new Skybox(skyboxFaces));
 }
 
 scene::MainScene::~MainScene() {
@@ -32,6 +40,7 @@ void scene::MainScene::onCreate() {
     initUniformBuffers();
     initModels();
     initLights();
+    skybox_->onCreate(aAssetManager_);
 }
 
 void scene::MainScene::doFrame() {
@@ -47,6 +56,7 @@ void scene::MainScene::doFrame() {
             renderModels(model);
         }
     );
+    skybox_->doFrame(skyboxShader_.get());
     renderFramebuffer();
 }
 
@@ -101,6 +111,15 @@ void scene::MainScene::initShaders() {
         "shader/framebufferScreen.vert",
         "shader/framebufferScreen.frag"
     );
+    skyboxShader_ = shaderManager.getShader(
+        "shader/skybox.vert",
+        "shader/skybox.frag"
+    );
+    skyboxShader_->activate();
+    skyboxShader_->set_int("cubemap", 0);
+    skyboxShader_->set_mat4("VIEW", glm::mat4(glm::mat3(ndk_helper::utils::get_view_matrix(viewPos_))));
+    skyboxShader_->set_mat4("PROJECTION", ndk_helper::utils::get_projection_matrix(width_, height_));
+    glUseProgram(0);
 }
 
 void scene::MainScene::initUniformBuffers() {

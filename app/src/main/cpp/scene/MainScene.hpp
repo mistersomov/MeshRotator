@@ -2,9 +2,7 @@
 #define MESHROTATOR_MAINSCENE_HPP
 
 #include "Scene.hpp"
-#include "initializer/ShaderInitializer.hpp"
-#include "initializer/ModelInitializer.hpp"
-#include "initializer/LightInitializer.hpp"
+#include "Skybox.hpp"
 #include "NDKHelper.hpp"
 
 namespace scene {
@@ -15,10 +13,7 @@ namespace scene {
     using ShaderManager = ndk_helper::shdrmgr::ShaderManager;
     using Shader = ndk_helper::shdr::Shader;
 
-    class MainScene : public Scene,
-                      protected ShaderInitializer,
-                      protected ModelInitializer,
-                      protected LightInitializer {
+    class MainScene : public Scene {
     public:
         MainScene(
             float width,
@@ -46,6 +41,9 @@ namespace scene {
         std::unique_ptr<Shader> pillarShader_;
         std::unique_ptr<Shader> outlineShader_;
         std::unique_ptr<Shader> screenShader_;
+        std::unique_ptr<Shader> skyboxShader_;
+
+        std::unique_ptr<Skybox> skybox_;
 
         glm::vec3 viewPos_;
         glm::mat4 identityMat_ = glm::mat4(1.0f);

@@ -2,6 +2,9 @@
 #define MESHROTATOR_SCENE_HPP
 
 #include "NDKHelper.hpp"
+#include "initializer/ShaderInitializer.hpp"
+#include "initializer/ModelInitializer.hpp"
+#include "initializer/LightInitializer.hpp"
 
 namespace scene {
     /**
@@ -10,7 +13,9 @@ namespace scene {
      * exactly one scene is active, and that scene is the one who decides what gets
      * drawn to the screen and how input is handled.
      */
-    class Scene {
+    class Scene : protected ShaderInitializer,
+                  protected ModelInitializer,
+                  protected LightInitializer {
     public:
         Scene(float width, float height);
         virtual ~Scene();
@@ -19,6 +24,11 @@ namespace scene {
         virtual void doFrame() = 0;
 
     protected:
+        virtual void initShaders() override;
+        virtual void initUniformBuffers() override;
+        virtual void initModels() override;
+        virtual void initLights() override;
+
         GLuint framebuffer_{0}, renderbuffer_{0};
         GLuint framebufferTexture_{0};
         GLuint framebufferVAO_{0}, framebufferVBO_{0};
@@ -29,8 +39,6 @@ namespace scene {
     private:
         static const std::vector<GLfloat> screenVertices;
 
-
-        //TODO Think about SOLID here
         void attachFramebuffer();
         void fillFramebufferGLVertexObjects();
         void fillVertexAttribs();

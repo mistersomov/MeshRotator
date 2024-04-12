@@ -19,6 +19,7 @@ ndk_helper::mdl::Model ndk_helper::mdlmgr::ModelManager::getModelFromPath(const 
             | aiProcess_JoinIdenticalVertices
             | aiProcess_CalcTangentSpace
             | aiProcess_GenSmoothNormals
+            | aiProcess_FlipUVs
     );
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         aout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
@@ -39,7 +40,7 @@ void ndk_helper::mdlmgr::ModelManager::applyTextures(
         textures.end(),
         [&](const std::pair<mesh::TextureType, std::string&> texture
     ) {
-        model.addTexture(assetManager_.loadTexture(texture.first, texture.second));
+        model.addTexture(assetManager_.loadTexture2D(texture.first, texture.second));
     });
 }
 

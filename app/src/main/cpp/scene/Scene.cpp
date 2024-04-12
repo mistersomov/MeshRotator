@@ -19,6 +19,22 @@ scene::Scene::~Scene() {
     detachFramebuffer();
 }
 
+void scene::Scene::initShaders() {
+
+}
+
+void scene::Scene::initUniformBuffers() {
+
+}
+
+void scene::Scene::initModels() {
+
+}
+
+void scene::Scene::initLights() {
+
+}
+
 void scene::Scene::onCreate() {
 
 }
