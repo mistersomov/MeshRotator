@@ -93,13 +93,16 @@ void ndk_helper::assetmgr::AssetManager::handleShaderCompilationError(const GLui
     glDeleteShader(shader);
 }
 
-const ndk_helper::mesh::Texture ndk_helper::assetmgr::AssetManager::loadTexture(
-    const ndk_helper::mesh::TextureType type,
+const ndk_helper::mesh::Texture ndk_helper::assetmgr::AssetManager::loadTexture2D(
+    const mesh::TextureType type,
     const std::string& path
 ) const {
     try {
         auto buffer = readAssetFromPath(path);
-        auto textureID = generateTextureFromMemory(buffer);
+        int width, height, numberOfChannels;
+        auto data = generateTextureFromMemory(buffer, width, height, numberOfChannels);
+        const GLenum format = getImageFormat(numberOfChannels);
+        auto textureID = createTexture2D(format, width, height, data);
 
         return {type, textureID};
     } catch (std::exception& e) {
@@ -109,11 +112,12 @@ const ndk_helper::mesh::Texture ndk_helper::assetmgr::AssetManager::loadTexture(
     }
 }
 
-const GLuint
-ndk_helper::assetmgr::AssetManager::generateTextureFromMemory(const std::string &buffer) const {
-    stbi_set_flip_vertically_on_load(true);
-
-    int width, height, numberOfChannels;
+stbi_uc* ndk_helper::assetmgr::AssetManager::generateTextureFromMemory(
+    const std::string &buffer,
+    int& width,
+    int& height,
+    int& numberOfChannels
+) const {
     auto data =
         stbi_load_from_memory(
             (const stbi_uc *) buffer.c_str(),
@@ -128,10 +132,7 @@ ndk_helper::assetmgr::AssetManager::generateTextureFromMemory(const std::string 
         throw std::runtime_error("Failed to load image from memory");
     }
 
-    const GLenum format = getImageFormat(numberOfChannels);
-    auto textureID = createTexture(format, width, height, data);
-
-    return textureID;
+    return data;
 }
 
 const GLenum ndk_helper::assetmgr::AssetManager::getImageFormat(int &numberOfChannels) const {
@@ -156,7 +157,7 @@ const GLenum ndk_helper::assetmgr::AssetManager::getImageFormat(int &numberOfCha
     return format;
 }
 
-const GLuint ndk_helper::assetmgr::AssetManager::createTexture(
+const GLuint ndk_helper::assetmgr::AssetManager::createTexture2D(
     GLenum format,
     int& width,
     int& height,
@@ -176,18 +177,27 @@ const GLuint ndk_helper::assetmgr::AssetManager::createTexture(
         GL_UNSIGNED_BYTE,
         data
     );
-    setTextureParameters();
+    setTextureParameters(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return textureID;
 }
 
-void ndk_helper::assetmgr::AssetManager::setTextureParameters() const {
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+void ndk_helper::assetmgr::AssetManager::setTextureParameters(GLenum target) const {
+    switch (target) {
+        case GL_TEXTURE_2D:
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        case GL_TEXTURE_CUBE_MAP:
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    }
 }
 
 const std::string ndk_helper::assetmgr::AssetManager::loadModel(const std::string& path) const {
@@ -198,4 +208,33 @@ const std::string ndk_helper::assetmgr::AssetManager::loadModel(const std::strin
 
         return std::string();
     }
+}
+
+const GLuint ndk_helper::assetmgr::AssetManager::loadCubeMap(
+    std::vector<std::string> paths
+) const {
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (int i = 0; i != paths.size(); i++) {
+        auto buffer = readAssetFromPath(paths[i]);
+        auto data= generateTextureFromMemory(buffer, width, height, nrChannels);
+        glTexImage2D(
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            0,
+            GL_RGB,
+            width,
+            height,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            data
+        );
+        stbi_image_free(data);
+    }
+    setTextureParameters(GL_TEXTURE_CUBE_MAP);
+
+    return textureID;
 }

@@ -17,11 +17,12 @@ namespace ndk_helper {
             ~AssetManager();
 
             const GLuint loadShader(const GLenum type, const std::string& path) const;
-            const mesh::Texture loadTexture(
+            const mesh::Texture loadTexture2D(
                 const mesh::TextureType type,
                 const std::string& path
             ) const;
             const std::string loadModel(const std::string& path) const;
+            const GLuint loadCubeMap(std::vector<std::string> paths) const;
             static AssetManager& instance(AAssetManager* aasetManager);
 
         private:
@@ -33,10 +34,20 @@ namespace ndk_helper {
             void compileShader(const GLuint shader, const char* source) const;
             bool isShaderCompiled(const GLuint shader) const;
             void handleShaderCompilationError(const GLuint shader) const;
-            const GLuint generateTextureFromMemory(const std::string& buffer) const;
+            stbi_uc* generateTextureFromMemory(
+                const std::string& buffer,
+                int& width,
+                int& height,
+                int& numberOfChannels
+            ) const;
             const GLenum getImageFormat(int& numberOfChannels) const;
-            const GLuint createTexture(GLenum format, int& width, int& height, stbi_uc* data) const;
-            void setTextureParameters() const;
+            const GLuint createTexture2D(
+               GLenum format,
+               int& width,
+               int& height,
+               stbi_uc* data
+            ) const;
+            void setTextureParameters(GLenum target) const;
         };
     }
 }
