@@ -1,4 +1,7 @@
 import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Properties
 
 plugins {
     id("com.mistersomov.app")
@@ -10,6 +13,10 @@ plugins {
 
 val appNameDev = "MeshRotator Dev"
 val appNameProd = "MeshRotator"
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+keystoreProperties.load(keystorePropertiesFile.inputStream())
 
 android {
     namespace = "com.mistersomov.meshrotator"
@@ -25,7 +32,6 @@ android {
                 cppFlags += "-std=c++11 -frtti -Wall -Werror"
                 arguments(
                     "-DNDK_HELPER_PATH=${project(":common:ndk_helper").projectDir}",
-                    "-DNATIVE_TESTING_PATH=${project(":native-testing").projectDir}",
                     "-DANDROID_STL=c++_static",
                     "-DANDROID_TOOLCHAIN=clang"
                 )
@@ -37,6 +43,14 @@ android {
             ndkVersion = "26.1.10909125"
             path = file("CMakeLists.txt")
             version = "3.22.1"
+        }
+    }
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
         }
     }
     buildTypes {
@@ -54,10 +68,23 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             resValue(type = "string", name = "app_name", value = appNameProd)
             configure<CrashlyticsExtension> {
                 nativeSymbolUploadEnabled = true
+            }
+            applicationVariants.configureEach {
+                val date = Date()
+                val formattedDate = SimpleDateFormat("yyyy-MM-dd").format(date)
+                val apkName = "${appNameProd}-${defaultConfig.versionName}-${formattedDate}.apk"
+
+                outputs.configureEach {
+                    buildOutputs.all {
+                        val output =
+                            this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                        output.outputFileName = apkName
+                    }
+                }
             }
         }
     }
@@ -72,7 +99,6 @@ dependencies {
     // project
     implementation(project(":common:ndk_helper"))
     implementation(project(":common:design"))
-    implementation(project(":native-testing"))
 
     // libs
     api(libs.game.activity)
