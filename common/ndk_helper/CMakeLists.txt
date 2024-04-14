@@ -36,6 +36,7 @@ IF(NOT TARGET ndk_helper)
 
         src/main/cpp/Mesh.cpp
         src/main/cpp/Model.cpp
+        src/main/cpp/core/CoreModel.cpp
         src/main/cpp/Shader.cpp
     )
     target_link_libraries(ndk_helper
