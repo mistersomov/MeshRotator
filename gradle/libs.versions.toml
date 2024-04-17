@@ -29,8 +29,16 @@ firebase-crashlytics-gradle = "2.9.9"
 google-services = "4.4.1"
 ksp = "1.9.22-1.0.17"
 
+#Koin
+koin = "3.4.0"
+
+#Logging
+timber = "5.0.1"
+
 #test
 junit = "4.13.2"
+junit5 = "5.10.0"
+mockk = "1.13.7"
 androidx-test-ext = "1.1.5"
 androidx-test-espresso = "3.5.1"
 googletest = "1.11.0-beta-1"
@@ -62,14 +70,32 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebaseCrashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 firebaseCrashlyticsNdk = { group = "com.google.firebase", name = "firebase-crashlytics-ndk" }
 firebase-crashlytics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
+firebase-analytics-ktx = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
 
 #Gradle
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 
+#Google
+google-services = { group = "com.google.gms", name = "google-services", version.ref = "google-services" }
+
+#Koin
+koin = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+
+#Logging
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
 #test
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit5 = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit5" }
+junit5-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit5" }
+test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 androidx-test-ext = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext" }
+test-kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+test-kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
+test-kotlin-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 androidx-test-espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-test-espresso" }
 androidx-junit-gtest = { module = "androidx.test.ext:junit-gtest", version.ref = "junit-gtest" }
 googletest = { module = "com.android.ndk.thirdparty:googletest", version.ref = "googletest" }

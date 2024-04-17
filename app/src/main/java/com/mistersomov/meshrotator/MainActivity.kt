@@ -6,8 +6,12 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.google.androidgamesdk.GameActivity
+import com.mistersomov.analytics_api.data.model.Event.FIRST_LAUNCH
+import com.mistersomov.analytics_api.domain.FirstLaunchPrefs
+import com.mistersomov.analytics_api.domain.repository.AnalyticsRepository
 import com.mistersomov.design.component.joystick.VirtualJoystick
 import com.mistersomov.meshrotator.databinding.MainSceneLayoutBinding
+import org.koin.android.ext.android.get
 
 class MainActivity : GameActivity() {
     companion object {
@@ -20,6 +24,12 @@ class MainActivity : GameActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val firstLaunchPrefs: FirstLaunchPrefs = get()
+        val analyticsRepository: AnalyticsRepository = get()
+        if (firstLaunchPrefs.isFirstLaunch()) {
+            firstLaunchPrefs.onFirstLaunch()
+            analyticsRepository.sendEventFB(FIRST_LAUNCH)
+        }
         binding = MainSceneLayoutBinding.inflate(LayoutInflater.from(this))
         attachJoystick()
     }

@@ -17,6 +17,8 @@ dependencyResolutionManagement {
 rootProject.name = "Mesh Rotator"
 include(
     ":app",
+    ":analytics",
+    ":analytics-api",
     ":common:ndk_helper",
     ":common:design"
 )

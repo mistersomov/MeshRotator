@@ -97,6 +97,7 @@ android {
 
 dependencies {
     // project
+    implementation(project(":analytics"))
     implementation(project(":common:ndk_helper"))
     implementation(project(":common:design"))
 
@@ -106,16 +107,27 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
+    implementation(libs.koin)
+    implementation(libs.koin.compose)
 
-    // analytics
+    // crashlytics
     api(platform(libs.firebase.bom))
     implementation(libs.firebaseCrashlytics)
     implementation(libs.firebaseCrashlyticsNdk)
+
+    // logging
+    implementation(libs.timber)
 
     // tests
     implementation(libs.androidx.junit.gtest)
     implementation(libs.googletest)
     testImplementation(libs.junit)
+    testImplementation(libs.koin.test)
+    testImplementation(libs.junit5.engine)
+    testImplementation(libs.junit5)
+    testImplementation(libs.test.kotlin.junit)
+    testImplementation(libs.test.kotlin.coroutines)
+    testImplementation(libs.test.kotlin.reflect)
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.espresso)
     androidTestImplementation(platform(libs.compose.bom))
