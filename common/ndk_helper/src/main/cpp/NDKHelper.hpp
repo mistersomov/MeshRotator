@@ -2,6 +2,7 @@
 #define MESH_ROTATOR_NDKHELPER_HPP
 
 #include "Model.hpp"
+#include "core/CoreModel.hpp"
 #include "manager/TimeManager.hpp"
 #include "manager/AssetManager.hpp"
 #include "manager/ModelManager.hpp"
