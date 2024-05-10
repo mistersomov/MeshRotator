@@ -13,9 +13,9 @@ layout(std140) uniform Matrices {
 out VS_OUT {
     vec3 fragPos;
     vec2 texCoords;
-    vec3 TangentLightPos;
-    vec3 TangentViewPos;
-    vec3 TangentFragPos;
+    vec3 tangentLightPos;
+    vec3 tangentViewPos;
+    vec3 tangentFragPos;
 } vs_out;
 
 uniform vec3 viewPos;
@@ -32,8 +32,8 @@ void main() {
 
     vs_out.fragPos = vec3(MODEL * vec4(aPos, 1.0));
     vs_out.texCoords = aTex;
-    vs_out.TangentLightPos = TBN * lightPos;
-    vs_out.TangentViewPos  = TBN * viewPos;
-    vs_out.TangentFragPos  = TBN * vs_out.fragPos;
+    vs_out.tangentLightPos = TBN * lightPos;
+    vs_out.tangentViewPos = TBN * viewPos;
+    vs_out.tangentFragPos = TBN * vs_out.fragPos;
     gl_Position = PROJECTION * VIEW * MODEL * vec4(aPos, 1.0);
 }

@@ -7,9 +7,9 @@
 namespace ndk_helper {
     namespace core {
         struct Transformation {
-            glm::vec3 position_{0.0f, 0.0f, -1.0f};
-            glm::vec3 rotation_{1.0f};
-            glm::vec3 scale_{1.0f};
+            glm::vec3 position{0.0f, 0.0f, -1.0f};
+            glm::vec3 rotation{1.0f};
+            glm::vec3 scale{1.0f};
         };
     }
 }

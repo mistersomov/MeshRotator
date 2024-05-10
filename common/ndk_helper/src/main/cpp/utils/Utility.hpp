@@ -18,7 +18,9 @@ namespace ndk_helper {
         glm::vec3 get_light_color();
 
         template<typename T, typename ... Args>
-        std::unique_ptr<T> make_unique(Args&& ... args);
+        std::unique_ptr<T> make_unique(Args&& ... args) {
+            return std::unique_ptr<T>{new T{args...}};
+        };
     }
 }
 

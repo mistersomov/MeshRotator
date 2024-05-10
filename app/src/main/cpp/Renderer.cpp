@@ -186,6 +186,9 @@ void rndr::Renderer::prepare_graphics() {
     glEnable(GL_STENCIL_TEST);
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+    glCullFace(GL_FRONT);
     glClearColor(RED, GREEN, BLUE, ALPHA);
 
     aout << "GL_VERSION: " << glGetString(GL_VERSION) << std::endl;

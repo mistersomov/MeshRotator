@@ -28,7 +28,7 @@ scene::MainScene::MainScene(
         "texture/cubemap/pz.png",
         "texture/cubemap/nz.png",
     };
-    skybox_ = std::unique_ptr<Skybox>(new Skybox(skyboxFaces));
+    skybox_ = ndk_helper::utils::make_unique<Skybox>(skyboxFaces);
 }
 
 scene::MainScene::~MainScene() {
@@ -56,7 +56,7 @@ void scene::MainScene::doFrame() {
             renderModels(model);
         }
     );
-    skybox_->doFrame(skyboxShader_.get());
+    skybox_->onDraw(skyboxShader_.get());
     renderFramebuffer();
 }
 
@@ -100,11 +100,11 @@ void scene::MainScene::renderFramebuffer() const {
 void scene::MainScene::initShaders() {
     ShaderManager& shaderManager = ShaderManager::instance(AssetManager::instance(aAssetManager_));
     pillarShader_ = shaderManager.getShader(
-        "shader/baseGeom.vert",
-        "shader/baseGeom.frag"
+        "shader/baseLighting.vert",
+        "shader/baseLighting.frag"
     );
     outlineShader_ =  shaderManager.getShader(
-        "shader/baseGeom.vert",
+        "shader/baseLighting.vert",
         "shader/outlined.frag"
     );
     screenShader_ = shaderManager.getShader(
