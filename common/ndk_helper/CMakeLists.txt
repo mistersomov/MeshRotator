@@ -4,7 +4,7 @@ project(ndk_helper)
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -Wall -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions -frtti -Wall -Werror")
 
 IF(NOT TARGET ndk_helper)
     #gameActivity
@@ -28,6 +28,7 @@ IF(NOT TARGET ndk_helper)
     add_library(ndk_helper STATIC
         src/main/cpp/utils/AndroidOut.cpp
         src/main/cpp/utils/Utility.cpp
+        src/main/cpp/utils/AssimpHelper.cpp
 
         src/main/cpp/manager/ModelManager.cpp
         src/main/cpp/manager/AssetManager.cpp
@@ -36,8 +37,11 @@ IF(NOT TARGET ndk_helper)
 
         src/main/cpp/Mesh.cpp
         src/main/cpp/Model.cpp
-        src/main/cpp/core/CoreModel.cpp
         src/main/cpp/Shader.cpp
+
+        src/main/cpp/core/CoreBody.cpp
+        src/main/cpp/core/SkinnedBody.cpp
+        src/main/cpp/core/Bone.cpp
     )
     target_link_libraries(ndk_helper
         #assimp

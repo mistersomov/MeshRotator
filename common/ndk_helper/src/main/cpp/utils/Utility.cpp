@@ -28,8 +28,3 @@ glm::vec3 ndk_helper::utils::get_light_color() {
 float ndk_helper::utils::get_aspect_ratio(const float width, const float height) {
     return width / height;
 }
-
-template<typename T, typename ... Args>
-std::unique_ptr<T> ndk_helper::utils::make_unique(Args&& ... args) {
-    return std::unique_ptr<T>{new T{args...}};
-}

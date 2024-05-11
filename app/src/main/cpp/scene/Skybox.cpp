@@ -59,8 +59,8 @@ void scene::Skybox::onCreate(AAssetManager* aAssetManager) {
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
     glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(float), vertices_.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 
     glGenBuffers(1, &ebo_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
@@ -76,7 +76,7 @@ void scene::Skybox::onCreate(AAssetManager* aAssetManager) {
     textureId_ = assetManager.loadCubeMap(faces_);
 }
 
-void scene::Skybox::doFrame(Shader* shader) {
+void scene::Skybox::onDraw(Shader* shader) {
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
     shader->activate();
