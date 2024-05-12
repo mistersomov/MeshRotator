@@ -4,7 +4,7 @@
 
 // Position of the camera
 constexpr float VIEW_POS_X = 0.0f;
-constexpr float VIEW_POS_Y = 0.0f;
+constexpr float VIEW_POS_Y = 4.0f;
 constexpr float VIEW_POS_Z = 10.0f;
 
 //Physics constants
@@ -20,15 +20,7 @@ scene::MainScene::MainScene(
     timeManager_{std::move(timeManager)},
     viewPos_{VIEW_POS_X, VIEW_POS_Y, VIEW_POS_Z}
 {
-    std::vector<std::string> skyboxFaces = {
-        "texture/cubemap/px.png",
-        "texture/cubemap/nx.png",
-        "texture/cubemap/py.png",
-        "texture/cubemap/ny.png",
-        "texture/cubemap/pz.png",
-        "texture/cubemap/nz.png",
-    };
-    skybox_ = ndk_helper::utils::make_unique<Skybox>(skyboxFaces);
+
 }
 
 scene::MainScene::~MainScene() {
@@ -40,7 +32,7 @@ void scene::MainScene::onCreate() {
     initUniformBuffers();
     initModels();
     initLights();
-    skybox_->onCreate(aAssetManager_);
+    initSkybox();
 }
 
 void scene::MainScene::doFrame() {
@@ -56,7 +48,7 @@ void scene::MainScene::doFrame() {
             renderModels(model);
         }
     );
-    skybox_->onDraw(skyboxShader_.get());
+    skybox_->onDraw();
     renderFramebuffer();
 }
 
@@ -207,7 +199,7 @@ void scene::MainScene::addAircraft() {
     };
 
     modelManager.applyTextures(aircraft, textures);
-    aircraft.setPosition({0.0f, -4.0f, -1.0f});
+    aircraft.setPosition({0.0f, 0.0f, -1.0f});
     aircraft.setScale(glm::vec3(1.0f));
     models_.emplace_back(aircraft);
 }
@@ -261,4 +253,17 @@ void scene::MainScene::renderOutline(Model& model) const {
     glEnable(GL_DEPTH_TEST);
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 0, 0xFF);
+}
+
+void scene::MainScene::initSkybox() {
+    std::vector<std::string> skyboxFaces = {
+        "texture/cubemap/px.png",
+        "texture/cubemap/nx.png",
+        "texture/cubemap/py.png",
+        "texture/cubemap/ny.png",
+        "texture/cubemap/pz.png",
+        "texture/cubemap/nz.png",
+    };
+    skybox_ = ndk_helper::utils::make_unique<Skybox>(skyboxFaces, skyboxShader_.get());
+    skybox_->onCreate(aAssetManager_);
 }

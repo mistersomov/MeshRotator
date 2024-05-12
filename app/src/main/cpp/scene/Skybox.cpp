@@ -1,55 +1,58 @@
 #include "Skybox.hpp"
 
-scene::Skybox::Skybox(std::vector<std::string> skyboxFaces) : faces_{std::move(skyboxFaces)} {
+scene::Skybox::Skybox(
+    std::vector<std::string> skyboxFaces,
+    Shader* pShader
+) : faces_{std::move(skyboxFaces)}, shader_{pShader} {
     vertices_ = {
-        -1.0f, -1.0f, -1.0f,
         1.0f, -1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
         -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, 1.0f,
 
-        -1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-
-        1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f, 1.0f,
         1.0f, -1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f,  1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
 
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
 
-        -1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
     };
     indices_ = {
         0, 1, 3,
-        2, 3, 1,
+        2, 0, 3,
 
         4, 5, 7,
         6, 7, 5,
 
         8, 9, 11,
-        10, 11, 9,
+        10, 8, 11,
 
         12, 13, 15,
-        14, 15, 13,
+        14, 12, 15,
 
-        16, 17, 18,
-        16, 18, 19,
+        16, 17, 19,
+        18, 16, 19,
 
         20, 21, 23,
-        22, 23, 21
+        22, 21, 20
     };
 }
 
@@ -76,15 +79,19 @@ void scene::Skybox::onCreate(AAssetManager* aAssetManager) {
     textureId_ = assetManager.loadCubeMap(faces_);
 }
 
-void scene::Skybox::onDraw(Shader* shader) {
-    glDepthMask(GL_FALSE);
+void scene::Skybox::onDraw() {
+    GLint oldCullFaceMode;
+    glGetIntegerv(GL_CULL_FACE_MODE, &oldCullFaceMode);
+    GLint oldDepthFuncMode;
+    glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFuncMode);
+    glCullFace(GL_FRONT);
     glDepthFunc(GL_LEQUAL);
-    shader->activate();
+    shader_->activate();
     glBindVertexArray(vao_);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureId_);
     glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_SHORT, 0);
     glBindVertexArray(0);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LESS);
+    glCullFace(oldCullFaceMode);
+    glDepthFunc(oldDepthFuncMode);
 }

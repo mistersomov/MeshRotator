@@ -9,15 +9,17 @@ namespace scene {
 
     class Skybox {
     public:
-        Skybox(std::vector<std::string> skyboxFaces);
+        Skybox(std::vector<std::string> skyboxFaces, Shader* pShader);
 
         void onCreate(AAssetManager* aAssetManager);
-        void onDraw(Shader* shader);
+        void onDraw();
 
     private:
         std::vector<std::string> faces_;
         std::vector<GLfloat> vertices_;
         std::vector<uint16_t> indices_;
+
+        std::unique_ptr<Shader> shader_;
 
         GLuint vao_ = -1;
         GLuint vbo_ = -1;

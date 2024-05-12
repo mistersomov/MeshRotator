@@ -31,6 +31,7 @@ namespace scene {
         void initUniformBuffers() override;
         void initModels() override;
         void initLights() override;
+        void initSkybox();
 
     private:
         AAssetManager* aAssetManager_;
