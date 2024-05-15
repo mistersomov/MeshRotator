@@ -28,7 +28,8 @@ IF(NOT TARGET ndk_helper)
     add_library(ndk_helper STATIC
         src/main/cpp/utils/AndroidOut.cpp
         src/main/cpp/utils/Utility.cpp
-        src/main/cpp/utils/AssimpHelper.cpp
+        src/main/cpp/utils/AssimpUtility.cpp
+        src/main/cpp/utils/GlmUtility.cpp
 
         src/main/cpp/manager/ModelManager.cpp
         src/main/cpp/manager/AssetManager.cpp
@@ -42,6 +43,10 @@ IF(NOT TARGET ndk_helper)
         src/main/cpp/core/CoreBody.cpp
         src/main/cpp/core/SkinnedBody.cpp
         src/main/cpp/core/Bone.cpp
+        src/main/cpp/core/CoreLight.cpp
+        src/main/cpp/core/Camera.cpp
+
+        src/main/cpp/light/DirectionalLight.cpp
     )
     target_link_libraries(ndk_helper
         #assimp

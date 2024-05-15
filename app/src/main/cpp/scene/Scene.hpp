@@ -32,9 +32,12 @@ namespace scene {
         GLuint framebuffer_{0}, renderbuffer_{0};
         GLuint framebufferTexture_{0};
         GLuint framebufferVAO_{0}, framebufferVBO_{0};
+        GLuint uboMatrices_;
 
         float width_;
         float height_;
+
+        glm::mat4 identityMat_ = glm::mat4(1.0f);
 
     private:
         static const std::vector<GLfloat> screenVertices;

@@ -16,7 +16,7 @@ namespace rndr {
         EGLint width_{0};
         EGLint height_{0};
 
-        std::unique_ptr<scene::MainScene> scene_;
+        std::unique_ptr<scene::Scene> scene_;
 
         void prepare_graphics();
     public:

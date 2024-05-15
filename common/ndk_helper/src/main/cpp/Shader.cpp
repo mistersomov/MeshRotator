@@ -14,6 +14,13 @@ void ndk_helper::shdr::Shader::set_float(const std::string& name, float value) c
     glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
 }
 
+void ndk_helper::shdr::Shader::set_bool(const std::string& name, bool value) const {
+    glUniform1i(
+        glGetUniformLocation(id_, name.c_str()),
+        static_cast<uint32_t>(value)
+    );
+}
+
 void ndk_helper::shdr::Shader::set_vec3(const std::string& name, const glm::vec3 value) const {
     glUniform3fv(
         glGetUniformLocation(id_, name.c_str()),

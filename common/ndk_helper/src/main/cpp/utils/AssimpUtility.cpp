@@ -1,4 +1,4 @@
-#include "AssimpHelper.hpp"
+#include "AssimpUtility.hpp"
 
 glm::vec3 ndk_helper::utils::toGlmVec3(const aiVector3D& v) {
     return glm::vec3(v.x, v.y, v.z);

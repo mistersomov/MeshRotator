@@ -1,5 +1,5 @@
-#ifndef MESH_ROTATOR_ASSIMPHELPER_HPP
-#define MESH_ROTATOR_ASSIMPHELPER_HPP
+#ifndef MESH_ROTATOR_ASSIMPUTILITY_HPP
+#define MESH_ROTATOR_ASSIMPUTILITY_HPP
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -16,4 +16,4 @@ namespace ndk_helper {
     }
 }
 
-#endif //MESH_ROTATOR_ASSIMPHELPER_HPP
+#endif //MESH_ROTATOR_ASSIMPUTILITY_HPP

@@ -1,7 +1,7 @@
 #include "CoreBody.hpp"
 #include "../utils/AndroidOut.hpp"
 #include "../utils/Utility.hpp"
-#include "../utils/AssimpHelper.hpp"
+#include "../utils/AssimpUtility.hpp"
 #include <algorithm>
 #include <exception>
 

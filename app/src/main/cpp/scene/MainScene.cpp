@@ -17,10 +17,13 @@ scene::MainScene::MainScene(
     TimeManager& timeManager
 ) : Scene(width, height),
     aAssetManager_{aAssetManager},
-    timeManager_{std::move(timeManager)},
-    viewPos_{VIEW_POS_X, VIEW_POS_Y, VIEW_POS_Z}
+    timeManager_{std::move(timeManager)}
 {
-
+    camera_ = ndk_helper::utils::make_unique<Camera>(
+        glm::vec3{VIEW_POS_X, VIEW_POS_Y, VIEW_POS_Z},
+        width,
+        height
+    );
 }
 
 scene::MainScene::~MainScene() {
@@ -71,7 +74,7 @@ void scene::MainScene::renderModels(scene::Model &model) const {
 
     pillarShader_->activate();
     pillarShader_->set_mat4("MODEL", modelMat);
-    pillarShader_->set_vec3("viewPos", viewPos_);
+    pillarShader_->set_vec3("viewPos", camera_->position);
     pillarShader_->set_vec3("lightPos", ndk_helper::utils::get_light_dir());
     pillarShader_->set_float("material.shininess", 64.0f);
     model.draw(*(pillarShader_.get()));
@@ -109,8 +112,8 @@ void scene::MainScene::initShaders() {
     );
     skyboxShader_->activate();
     skyboxShader_->set_int("cubemap", 0);
-    skyboxShader_->set_mat4("VIEW", glm::mat4(glm::mat3(ndk_helper::utils::get_view_matrix(viewPos_))));
-    skyboxShader_->set_mat4("PROJECTION", ndk_helper::utils::get_projection_matrix(width_, height_));
+    skyboxShader_->set_mat4("VIEW", glm::mat4(glm::mat3(camera_->getViewMatrix())));
+    skyboxShader_->set_mat4("PROJECTION", camera_->getProjectionMatrix());
     glUseProgram(0);
 }
 
@@ -135,23 +138,17 @@ void scene::MainScene::initUniformBuffers() {
         0,
         bufferSize
     );
-
-    auto viewMat = ndk_helper::utils::get_view_matrix(viewPos_);
-    auto projMat = ndk_helper::utils::get_projection_matrix(
-        width_,
-        height_
-    );
     glBufferSubData(
         GL_UNIFORM_BUFFER,
         0,
         sizeof(glm::mat4),
-        glm::value_ptr(viewMat)
+        glm::value_ptr(camera_->getViewMatrix())
     );
     glBufferSubData(
         GL_UNIFORM_BUFFER,
         sizeof(glm::mat4),
         sizeof(glm::mat4),
-        glm::value_ptr(projMat)
+        glm::value_ptr(camera_->getProjectionMatrix())
     );
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
