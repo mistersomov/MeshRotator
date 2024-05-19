@@ -1,7 +1,7 @@
 #ifndef MESH_ROTATOR_BONE_HPP
 #define MESH_ROTATOR_BONE_HPP
 
-#include "../utils/AssimpHelper.hpp"
+#include "../utils/AssimpUtility.hpp"
 
 namespace ndk_helper {
     namespace core {

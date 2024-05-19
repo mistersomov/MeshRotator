@@ -3,7 +3,6 @@
 
 #include "Scene.hpp"
 #include "Skybox.hpp"
-#include "NDKHelper.hpp"
 
 namespace scene {
     using AssetManager = ndk_helper::assetmgr::AssetManager;
@@ -12,6 +11,7 @@ namespace scene {
     using Model = ndk_helper::mdl::Model;
     using ShaderManager = ndk_helper::shdrmgr::ShaderManager;
     using Shader = ndk_helper::shdr::Shader;
+    using Camera = ndk_helper::core::Camera;
 
     class MainScene : public Scene {
     public:
@@ -46,10 +46,7 @@ namespace scene {
 
         std::unique_ptr<Skybox> skybox_;
 
-        glm::vec3 viewPos_;
-        glm::mat4 identityMat_ = glm::mat4(1.0f);
-
-        GLuint uboMatrices_;
+        std::unique_ptr<Camera> camera_;
 
         //TODO Think about SOLID here
         void renderModels(Model& model) const;

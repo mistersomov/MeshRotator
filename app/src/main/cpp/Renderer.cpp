@@ -5,8 +5,8 @@ rndr::Renderer::Renderer(android_app *app): app_{app},
                                             timeManager_{new ndk_helper::timemgr::TimeManager()}
 {
     prepare_graphics();
-    scene_ = std::unique_ptr<scene::MainScene>(new scene::MainScene(
-            width_, height_, app_->activity->assetManager, *timeManager_
+    scene_ = std::unique_ptr<scene::Scene>(new scene::MainScene(
+        width_, height_, app_->activity->assetManager, *timeManager_
     ));
     scene_->onCreate();
 };
