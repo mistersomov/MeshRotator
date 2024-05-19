@@ -1,13 +1,6 @@
 #include "DirectionalLight.hpp"
 
-ndk_helper::light::DirectionalLight::DirectionalLight(
-    glm::vec3 direction,
-    float diffuseIntensity,
-    float ambientIntensity,
-    glm::vec3 lightColor
-) : CoreLight(ambientIntensity, lightColor),
-    worldDirection{direction},
-    diffuseIntensity{diffuseIntensity}
+ndk_helper::light::DirectionalLight::DirectionalLight(glm::vec3 direction) : CoreLight(), worldDirection{direction}
 {
 
 }

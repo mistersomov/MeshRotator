@@ -3,6 +3,7 @@
 precision mediump float;
 
 #define PI 3.1415926535897932384626433832795
+#define GAMMA 2.2
 
 struct Material {
     vec3 ambient;
@@ -16,11 +17,27 @@ struct PBRMaterial {
     vec3 color;
 };
 
-struct DirLight {
-    vec3 direction;
+struct CoreLight {
     vec3 color;
     float ambientIntensity;
     float diffuseIntensity;
+};
+
+struct DirLight {
+    CoreLight core;
+    vec3 direction;
+};
+
+struct Attenuation {
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+struct PointLight {
+    CoreLight core;
+    Attenuation attenuation;
+    vec3 position; // must be in local space
 };
 
 in VS_OUT {
@@ -29,10 +46,19 @@ in VS_OUT {
     vec3 normal;
 } fs_in;
 
+// Materials
 uniform bool gIsPBR;
 uniform PBRMaterial gPBRMaterial;
 uniform Material gMaterial;
+
+// Lights
+const int MAX_POINT_LIGHTS = 4;
 uniform DirLight gDirLight;
+uniform int gNumPointLights;
+uniform PointLight gPointLights[MAX_POINT_LIGHTS];
+const float kShininess = 16.0;
+const float kEnergyConservation = (8.0 + kShininess) / (8.0 * PI);
+
 uniform vec3 gCameraLocalPos;
 
 out vec4 color;
@@ -71,16 +97,26 @@ vec3 shlickFresnel(float vDotH) {
 
 // Cook-Torrance microfacet specular shading model is
 // f(l, v) = D(h) * G(l, v, h) * F(v, h) / 4 (n * l) (n * v)
-vec4 calcPBRLighting() {
-    vec3 nNormalized = normalize(fs_in.normal);
-    vec3 view = normalize(gCameraLocalPos - fs_in.localPos);
-    vec3 halfway = normalize(view + gDirLight.direction);
-    vec3 lightIntensity = gDirLight.color * gDirLight.diffuseIntensity;
+vec3 calcPBRLighting(CoreLight core, vec3 position, bool isDirLight, vec3 normal) {
+    vec3 lightIntensity = core.color * core.diffuseIntensity;
+    vec3 lightDir = vec3(0.0);
 
-    float nDotH = max(dot(nNormalized, halfway), 0.0);
+    if (isDirLight) {
+        lightDir = position;
+    } else {
+        lightDir = position - fs_in.localPos;
+        float lightToPixelDist = length(lightDir);
+        lightDir = normalize(lightDir);
+        lightIntensity /= pow(lightToPixelDist, 2.0);
+    }
+
+    vec3 view = normalize(gCameraLocalPos - fs_in.localPos);
+    vec3 halfway = normalize(view + lightDir);
+
+    float nDotH = max(dot(normal, halfway), 0.0);
     float vDotH = max(dot(view, halfway), 0.0);
-    float nDotL = max(dot(nNormalized, gDirLight.direction), 0.0);
-    float nDotV = max(dot(nNormalized, view), 0.0);
+    float nDotL = max(dot(normal, lightDir), 0.0);
+    float nDotV = max(dot(normal, view), 0.0);
 
     vec3 kS = shlickFresnel(vDotH);
     vec3 kD = 1.0 - kS;
@@ -90,7 +126,7 @@ vec4 calcPBRLighting() {
                 * geomSmith(nDotL)
                 * geomSmith(nDotV)
                 * kS;
-    float specBRDFDenom = 4.0 * nDotL * nDotV;
+    float specBRDFDenom = max(4.0 * nDotL * nDotV, 0.0001);
     vec3 specularBRDF = specBRDFNom / specBRDFDenom;
 
     vec3 fLambert = vec3(0.0);
@@ -99,41 +135,70 @@ vec4 calcPBRLighting() {
     }
     vec3 diffuseBRDF = kD * fLambert / PI;
 
-    return vec4((diffuseBRDF + specularBRDF) * lightIntensity * nDotL, 1.0);
+    return (diffuseBRDF + specularBRDF) * lightIntensity * nDotL;
 }
 
-vec4 calcBlinnPhongLighting() {
-    vec3 nNormalized = normalize(fs_in.normal);
-    vec4 ambientColor =
-            gDirLight.ambientIntensity
-                * vec4(gDirLight.color, 1.0)
-                * vec4(gMaterial.ambient, 1.0);
+vec3 calcBlinnPhongLighting(CoreLight core, vec3 lightPos, vec3 normal) {
+    vec3 ambientColor =
+            core.ambientIntensity
+                * core.color
+                * gMaterial.ambient;
 
-    float diffuseFactor = max(dot(gDirLight.direction, nNormalized), 0.0);
-    vec4 diffuseColor = vec4(0.0, 0.0, 0.0, 0.0);
-    vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
+    float diffuseFactor = max(dot(lightPos, normal), 0.0);
+    vec3 diffuseColor = vec3(0.0, 0.0, 0.0);
+    vec3 specularColor = vec3(0.0, 0.0, 0.0);
     if (diffuseFactor > 0.0) {
         diffuseColor =
                 diffuseFactor
-                    * gDirLight.diffuseIntensity
-                    * vec4(gDirLight.color, 1.0)
-                    * vec4(gMaterial.diffuse, 1.0);
+                    * gMaterial.diffuse
+                    * core.diffuseIntensity
+                    * core.color;
 
         vec3 view = normalize(gCameraLocalPos - fs_in.localPos);
-        vec3 halfway = normalize(gDirLight.direction + view);
-        float specularFactor = pow(max(dot(halfway, view), 0.0), 16.0);
+        vec3 halfway = normalize(lightPos + view);
+        float specularFactor = kEnergyConservation * pow(max(dot(halfway, normal), 0.0), kShininess);
         specularColor =
                 specularFactor
-                    * vec4(gDirLight.color, 1.0)
-                    * vec4(gMaterial.specular, 1.0);
+                    * gMaterial.specular
+                    * core.diffuseIntensity
+                    * core.color;
     }
+
     return ambientColor + diffuseColor + specularColor;
 }
 
-void main() {
-    if (gIsPBR) {
-        color = calcPBRLighting();
+vec3 calcBlinnPhongPointLighting(PointLight light, vec3 normal) {
+    vec3 lightDir = light.position - fs_in.localPos;
+    float d = length(lightDir);
+    lightDir = normalize(lightDir);
+    vec3 color = calcBlinnPhongLighting(light.core, lightDir, normal);
+    float attentuation =
+            light.attenuation.constant
+                + light.attenuation.linear * d
+                + light.attenuation.quadratic * pow(d, 2.0);
+
+    return color / attentuation;
+}
+
+vec3 calcLightingInternal(bool isPBR) {
+    vec3 nNormalized = normalize(fs_in.normal);
+    vec3 total = vec3(0.0, 0.0, 0.0);
+
+    if (isPBR) {
+        total = calcPBRLighting(gDirLight.core, gDirLight.direction, true, nNormalized);
+        for (int i = 0; i != gNumPointLights; ++i) {
+            total += calcPBRLighting(gPointLights[i].core, gPointLights[i].position, false, nNormalized);
+        }
     } else {
-        color = calcBlinnPhongLighting();
+        total = calcBlinnPhongLighting(gDirLight.core, gDirLight.direction, nNormalized);
+        for (int i = 0; i != gNumPointLights; ++i) {
+            total += calcBlinnPhongPointLighting(gPointLights[i], nNormalized);
+        }
     }
+
+    return total;
+}
+
+void main() {
+    color = vec4(pow(calcLightingInternal(gIsPBR), vec3(1.0 / GAMMA)), 1.0);
 }

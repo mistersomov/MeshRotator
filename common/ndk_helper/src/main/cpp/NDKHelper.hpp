@@ -6,6 +6,7 @@
 #include "core/Camera.hpp"
 
 #include "light/DirectionalLight.hpp"
+#include "light/PointLight.hpp"
 
 #include "manager/TimeManager.hpp"
 #include "manager/AssetManager.hpp"

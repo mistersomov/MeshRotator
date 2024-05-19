@@ -11,11 +11,11 @@ namespace ndk_helper {
          * The derived classes will contain more properties of light such as position, direction and etc.
          */
         struct CoreLight {
-            CoreLight(float ambientIntensity = 0.1f, glm::vec3 lightColor = glm::vec3{1.0f});
             virtual ~CoreLight() = default;
 
-            float ambientIntensity;
-            glm::vec3 color;
+            float ambientIntensity{0.1f};
+            float diffuseIntensity{1.0f};
+            glm::vec3 color = glm::vec3(1.0f);
         };
     }
 }

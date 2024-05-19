@@ -47,6 +47,7 @@ IF(NOT TARGET ndk_helper)
         src/main/cpp/core/Camera.cpp
 
         src/main/cpp/light/DirectionalLight.cpp
+        src/main/cpp/light/PointLight.cpp
     )
     target_link_libraries(ndk_helper
         #assimp
