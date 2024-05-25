@@ -8,6 +8,10 @@
 #include "light/DirectionalLight.hpp"
 #include "light/PointLight.hpp"
 
+#include "material/MaterialC.hpp"
+#include "material/PhongMaterial.hpp"
+#include "material/PbrMaterial.hpp"
+
 #include "manager/TimeManager.hpp"
 #include "manager/AssetManager.hpp"
 #include "manager/ModelManager.hpp"

@@ -28,7 +28,6 @@ ndk_helper::core::CoreBody::~CoreBody() {
     glDisableVertexAttribArray(NORMAL);
     glDisableVertexAttribArray(TEX_COORD);
     glDisableVertexAttribArray(TANGENT);
-    glDisableVertexAttribArray(BI_TANGENT);
     glDeleteBuffers(BUFFERS_COUNT, buffers_.data());
     glDeleteVertexArrays(1, &vao_);
     vao_ = -1;
@@ -84,7 +83,6 @@ void ndk_helper::core::CoreBody::reserveSpace() {
     normals_.reserve(numVertices_);
     texCoords_.reserve(numVertices_);
     tangents_.reserve(numVertices_);
-    biTangents_.reserve(numVertices_);
     indices_.reserve(numIndices_);
 }
 
@@ -108,13 +106,9 @@ void ndk_helper::core::CoreBody::initSingleMesh(const aiMesh* pMesh) {
             if (pMesh->mTangents) {
                 tangents_.push_back(glm::vec3(pMesh->mTangents[i].x, pMesh->mTangents[i].y, pMesh->mTangents[i].z));
             }
-            if (pMesh->mBitangents) {
-                biTangents_.push_back(glm::vec3(pMesh->mBitangents[i].x, pMesh->mBitangents[i].y, pMesh->mBitangents[i].z));
-            }
         } else {
             texCoords_.push_back(glm::vec2(0.0f));
             tangents_.push_back(glm::vec3(0.0f));
-            biTangents_.push_back(glm::vec3(0.0f));
         }
     }
     for (uint32_t i = 0; i != pMesh->mNumFaces; ++i) {
@@ -131,7 +125,6 @@ void ndk_helper::core::CoreBody::fillBuffers() {
     fillNormalBuffer();
     fillTexCoordBuffer();
     fillTangentBuffer();
-    fillBiTangentBuffer();
     fillIndexBuffer();
 }
 
@@ -203,25 +196,6 @@ void ndk_helper::core::CoreBody::fillTangentBuffer() {
     glEnableVertexAttribArray(TANGENT);
     glVertexAttribPointer(
         TANGENT,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        0,
-        nullptr
-    );
-}
-
-void ndk_helper::core::CoreBody::fillBiTangentBuffer() {
-    glBindBuffer(GL_ARRAY_BUFFER, buffers_[BI_TANGENT]);
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        biTangents_.size() * sizeof(biTangents_[0]),
-        biTangents_.data(),
-        GL_STATIC_DRAW
-    );
-    glEnableVertexAttribArray(BI_TANGENT);
-    glVertexAttribPointer(
-        BI_TANGENT,
         3,
         GL_FLOAT,
         GL_FALSE,

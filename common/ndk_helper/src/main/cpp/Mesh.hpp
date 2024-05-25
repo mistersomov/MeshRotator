@@ -12,21 +12,22 @@ namespace ndk_helper {
             glm::vec3 normal;
             glm::vec2 texCoord;
             glm::vec3 tangent;
-            glm::vec3 bitangent;
 
             bool operator==(const mesh::Vertex& other) const {
                 return position == other.position
                     && normal == other.normal
                     && texCoord == other.texCoord
-                    && tangent == other.tangent
-                    && bitangent == other.bitangent;
+                    && tangent == other.tangent;
             };
         };
 
         enum class TextureType {
             NONE,
             DIFFUSE,
-            NORMAL
+            NORMAL,
+            METALLIC,
+            ROUGHNESS,
+            AO
         };
 
         struct Texture {
