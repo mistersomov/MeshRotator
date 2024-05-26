@@ -24,8 +24,20 @@ void ndk_helper::mdl::Model::addTexture(ndk_helper::mesh::Texture texture) {
 void ndk_helper::mdl::Model::draw(ndk_helper::shdr::Shader& shader) const {
     for (auto i = 0; i != textures_.size(); ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
-        std::string name = textures_[i].type == mesh::TextureType::DIFFUSE ? "diffuse" : "normal";
-        shader.set_int("material." + name, i);
+        std::string name;
+        if (textures_[i].type == mesh::TextureType::DIFFUSE) {
+            name = "albedoT";
+        } else if (textures_[i].type == mesh::TextureType::NORMAL) {
+            name = "normalT";
+        } else if (textures_[i].type == mesh::TextureType::METALLIC) {
+            name = "metallicT";
+        } else if (textures_[i].type == mesh::TextureType::ROUGHNESS) {
+            name = "roughnessT";
+        } else if (textures_[i].type == mesh::TextureType::AO) {
+            name = "aoT";
+        }
+        //shader.set_int("gMaterial." + name, i);
+        shader.set_int("gPBRMaterial." + name, i);
         glBindTexture(GL_TEXTURE_2D, textures_[i].id);
     }
     std::for_each(meshes_.begin(), meshes_.end(), [&](const mesh::Mesh &mesh) {

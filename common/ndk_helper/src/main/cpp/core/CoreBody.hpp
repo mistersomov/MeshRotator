@@ -17,7 +17,6 @@ namespace ndk_helper {
         constexpr uint32_t NORMAL = 1;
         constexpr uint32_t TEX_COORD = 2;
         constexpr uint32_t TANGENT = 3;
-        constexpr uint32_t BI_TANGENT = 4;
         constexpr uint32_t INDEX = 7;
         constexpr uint32_t BUFFERS_COUNT = 8;
 
@@ -63,14 +62,12 @@ namespace ndk_helper {
             void fillNormalBuffer();
             void fillTexCoordBuffer();
             void fillTangentBuffer();
-            void fillBiTangentBuffer();
             void fillIndexBuffer();
 
             std::vector<glm::vec3> positions_;
             std::vector<glm::vec3> normals_;
             std::vector<glm::vec2> texCoords_;
             std::vector<glm::vec3> tangents_;
-            std::vector<glm::vec3> biTangents_;
             std::vector<GLushort> indices_;
 
             AAssetManager* assetManager_;

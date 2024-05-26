@@ -76,9 +76,6 @@ ndk_helper::mesh::Mesh ndk_helper::mdlmgr::ModelManager::process_mesh(aiMesh* me
             if (mesh->mTangents) {
                 vertex.tangent = applyTangents(mesh->mTangents[i]);
             }
-            if (mesh->mBitangents) {
-                vertex.bitangent = applyBitangents(mesh->mBitangents[i]);
-            }
         } else {
             vertex.texCoord = glm::vec2(0.0f, 0.0f);
         }

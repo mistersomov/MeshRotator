@@ -8,7 +8,10 @@ namespace ndk_helper {
         enum class TextureType {
             NONE,
             DIFFUSE,
-            NORMAL
+            NORMAL,
+            METALLIC,
+            ROUGHNESS,
+            AO
         };
 
         struct Texture {

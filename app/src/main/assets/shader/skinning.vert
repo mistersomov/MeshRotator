@@ -4,9 +4,8 @@ layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNorm;
 layout(location = 2) in vec2 aTex;
 layout(location = 3) in vec3 aTangent;
-layout(location = 4) in vec3 aBitangent;
-layout(location = 5) in ivec4 aBoneIds;
-layout(location = 6) in vec4 aBoneWeights;
+layout(location = 4) in ivec4 aBoneIds;
+layout(location = 5) in vec4 aBoneWeights;
 layout(std140) uniform Matrices {
     mat4 VIEW;
     mat4 PROJECTION;

@@ -1,8 +1,8 @@
 #include "SkinnedBody.hpp"
 #include "../utils/Utility.hpp"
 
-constexpr uint32_t BONE = 5;
-constexpr uint32_t BONE_WEIGHT = 6;
+constexpr uint32_t BONE = 4;
+constexpr uint32_t BONE_WEIGHT = 5;
 
 ndk_helper::core::SkinnedBody::SkinnedBody(
     const std::string& path,
