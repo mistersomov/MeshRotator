@@ -1,4 +1,4 @@
-#include "CoreBody.hpp"
+#include "Body.hpp"
 #include "../utils/AndroidOut.hpp"
 #include "../utils/Utility.hpp"
 #include "../utils/AssimpUtility.hpp"
@@ -7,7 +7,7 @@
 
 using AssetManager = ndk_helper::assetmgr::AssetManager;
 
-ndk_helper::core::CoreBody::CoreBody(
+ndk_helper::core::Body::Body(
     const std::string& path,
     AAssetManager* pAssetManager
 ) : assetManager_{pAssetManager} {
@@ -19,7 +19,7 @@ ndk_helper::core::CoreBody::CoreBody(
     }
 }
 
-ndk_helper::core::CoreBody::~CoreBody() {
+ndk_helper::core::Body::~Body() {
     if (pScene_ != nullptr) {
         delete pScene_;
         pScene_ = nullptr;
@@ -33,7 +33,7 @@ ndk_helper::core::CoreBody::~CoreBody() {
     vao_ = -1;
 }
 
-void ndk_helper::core::CoreBody::loadModel(const std::string& path) {
+void ndk_helper::core::Body::loadModel(const std::string& path) {
     AssetManager& assetManager = AssetManager::instance(assetManager_);
     auto modelAsset = assetManager.loadModel(path);
     pScene_ = importer.ReadFileFromMemory(
@@ -59,14 +59,14 @@ void ndk_helper::core::CoreBody::loadModel(const std::string& path) {
     }
 }
 
-void ndk_helper::core::CoreBody::initGeometry() {
+void ndk_helper::core::Body::initGeometry() {
     countVerticesAndIndices();
     reserveSpace();
     initMeshes();
     fillBuffers();
 }
 
-void ndk_helper::core::CoreBody::countVerticesAndIndices() {
+void ndk_helper::core::Body::countVerticesAndIndices() {
     meshes_.resize(pScene_->mNumMeshes);
     for (uint32_t i = 0; i != meshes_.size(); ++i) {
         meshes_[i].numIndices = pScene_->mMeshes[i]->mNumFaces * 3;
@@ -78,7 +78,7 @@ void ndk_helper::core::CoreBody::countVerticesAndIndices() {
     }
 }
 
-void ndk_helper::core::CoreBody::reserveSpace() {
+void ndk_helper::core::Body::reserveSpace() {
     positions_.reserve(numVertices_);
     normals_.reserve(numVertices_);
     texCoords_.reserve(numVertices_);
@@ -86,14 +86,14 @@ void ndk_helper::core::CoreBody::reserveSpace() {
     indices_.reserve(numIndices_);
 }
 
-void ndk_helper::core::CoreBody::initMeshes() {
+void ndk_helper::core::Body::initMeshes() {
     for (uint32_t i = 0; i != meshes_.size(); ++i) {
         const aiMesh* pMesh = pScene_->mMeshes[i];
         initSingleMesh(pMesh);
     }
 }
 
-void ndk_helper::core::CoreBody::initSingleMesh(const aiMesh* pMesh) {
+void ndk_helper::core::Body::initSingleMesh(const aiMesh* pMesh) {
     for (uint32_t i = 0; i != pMesh->mNumVertices; ++i) {
         positions_.push_back(glm::vec3(pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z));
         if (pMesh->HasNormals()) {
@@ -120,7 +120,7 @@ void ndk_helper::core::CoreBody::initSingleMesh(const aiMesh* pMesh) {
     }
 }
 
-void ndk_helper::core::CoreBody::fillBuffers() {
+void ndk_helper::core::Body::fillBuffers() {
     fillPositionBuffer();
     fillNormalBuffer();
     fillTexCoordBuffer();
@@ -128,7 +128,7 @@ void ndk_helper::core::CoreBody::fillBuffers() {
     fillIndexBuffer();
 }
 
-void ndk_helper::core::CoreBody::fillPositionBuffer() {
+void ndk_helper::core::Body::fillPositionBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, buffers_[POSITION]);
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -147,7 +147,7 @@ void ndk_helper::core::CoreBody::fillPositionBuffer() {
     );
 }
 
-void ndk_helper::core::CoreBody::fillNormalBuffer() {
+void ndk_helper::core::Body::fillNormalBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, buffers_[NORMAL]);
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -166,7 +166,7 @@ void ndk_helper::core::CoreBody::fillNormalBuffer() {
     );
 }
 
-void ndk_helper::core::CoreBody::fillTexCoordBuffer() {
+void ndk_helper::core::Body::fillTexCoordBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, buffers_[TEX_COORD]);
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -185,7 +185,7 @@ void ndk_helper::core::CoreBody::fillTexCoordBuffer() {
     );
 }
 
-void ndk_helper::core::CoreBody::fillTangentBuffer() {
+void ndk_helper::core::Body::fillTangentBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, buffers_[TANGENT]);
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -204,7 +204,7 @@ void ndk_helper::core::CoreBody::fillTangentBuffer() {
     );
 }
 
-void ndk_helper::core::CoreBody::fillIndexBuffer() {
+void ndk_helper::core::Body::fillIndexBuffer() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers_[INDEX]);
     glBufferData(
         GL_ELEMENT_ARRAY_BUFFER,
@@ -214,7 +214,7 @@ void ndk_helper::core::CoreBody::fillIndexBuffer() {
     );
 }
 
-void ndk_helper::core::CoreBody::addTextures(std::map<TextureType, std::string> textures) {
+void ndk_helper::core::Body::addTextures(std::map<TextureType, std::string> textures) {
     AssetManager& assetManager = AssetManager::instance(assetManager_);
     std::for_each(
         textures.begin(),
@@ -226,7 +226,7 @@ void ndk_helper::core::CoreBody::addTextures(std::map<TextureType, std::string> 
     });
 }
 
-void ndk_helper::core::CoreBody::onDraw() const {
+void ndk_helper::core::Body::onDraw() const {
     glBindVertexArray(vao_);
     std::for_each(meshes_.begin(), meshes_.end(), [&](const Mesh& mesh) {
         glDrawElementsBaseVertex(

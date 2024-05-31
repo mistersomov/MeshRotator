@@ -1,12 +1,11 @@
 #ifndef MESH_ROTATOR_POINTLIGHT_HPP
 #define MESH_ROTATOR_POINTLIGHT_HPP
 
-#include "../core/CoreLight.hpp"
-#include "../utils/GlmUtility.hpp"
+#include "../core/Light.hpp"
 
 namespace ndk_helper {
     namespace light {
-        struct PointLight : public core::CoreLight {
+        struct PointLight : public core::Light {
             PointLight(glm::vec3 lightPos);
             ~PointLight() override = default;
 

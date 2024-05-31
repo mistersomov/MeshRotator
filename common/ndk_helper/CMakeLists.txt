@@ -40,10 +40,9 @@ IF(NOT TARGET ndk_helper)
         src/main/cpp/Model.cpp
         src/main/cpp/Shader.cpp
 
-        src/main/cpp/core/CoreBody.cpp
+        src/main/cpp/core/Body.cpp
         src/main/cpp/core/SkinnedBody.cpp
         src/main/cpp/core/Bone.cpp
-        src/main/cpp/core/CoreLight.cpp
         src/main/cpp/core/Camera.cpp
 
         src/main/cpp/light/DirectionalLight.cpp

@@ -1,5 +1,5 @@
-#ifndef MESH_ROTATOR_COREBODY_HPP
-#define MESH_ROTATOR_COREBODY_HPP
+#ifndef MESH_ROTATOR_BODY_HPP
+#define MESH_ROTATOR_BODY_HPP
 
 #include "Texture.hpp"
 #include "../manager/AssetManager.hpp"
@@ -29,10 +29,10 @@ namespace ndk_helper {
         /**
          * Base class for all models. Models are divided into meshes. Used SOA technique.
          */
-        class CoreBody {
+        class Body {
         public:
-            CoreBody(const std::string& path, AAssetManager* pAssetManager);
-            virtual ~CoreBody();
+            Body(const std::string& path, AAssetManager* pAssetManager);
+            virtual ~Body();
 
         protected:
             virtual void addTextures(std::map<TextureType, std::string> textures) final;
@@ -76,4 +76,4 @@ namespace ndk_helper {
     }
 }
 
-#endif //MESH_ROTATOR_COREBODY_HPP
+#endif //MESH_ROTATOR_BODY_HPP

@@ -1,6 +1,6 @@
 #include "PointLight.hpp"
 
-ndk_helper::light::PointLight::PointLight(glm::vec3 lightPos) : CoreLight(), position{lightPos} {
+ndk_helper::light::PointLight::PointLight(glm::vec3 lightPos) : Light(), position{lightPos} {
 
 }
 

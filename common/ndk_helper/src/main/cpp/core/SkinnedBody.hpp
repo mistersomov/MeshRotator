@@ -1,7 +1,7 @@
 #ifndef MESH_ROTATOR_SKINNEDBODY_HPP
 #define MESH_ROTATOR_SKINNEDBODY_HPP
 
-#include "CoreBody.hpp"
+#include "Body.hpp"
 #include "Bone.hpp"
 
 namespace ndk_helper {
@@ -33,7 +33,7 @@ namespace ndk_helper {
             glm::mat4 final_;
         };
 
-        class SkinnedBody : public CoreBody {
+        class SkinnedBody : public Body {
         public:
             SkinnedBody(const std::string& path, AAssetManager* pAssetManager);
             ~SkinnedBody() override;

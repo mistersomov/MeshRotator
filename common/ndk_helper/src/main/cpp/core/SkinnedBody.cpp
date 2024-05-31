@@ -7,7 +7,7 @@ constexpr uint32_t BONE_WEIGHT = 5;
 ndk_helper::core::SkinnedBody::SkinnedBody(
     const std::string& path,
     AAssetManager* pAssetManager
-) : CoreBody(path, pAssetManager) {
+) : Body(path, pAssetManager) {
     initBones();
     fillBonesBuffer();
 }
