@@ -1,6 +1,6 @@
 #include "DirectionalLight.hpp"
 
-ndk_helper::light::DirectionalLight::DirectionalLight(glm::vec3 direction) : CoreLight(), worldDirection{direction}
+ndk_helper::light::DirectionalLight::DirectionalLight(glm::vec3 direction) : Light(), worldDirection{direction}
 {
 
 }

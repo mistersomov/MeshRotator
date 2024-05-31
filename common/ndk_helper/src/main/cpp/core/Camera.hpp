@@ -21,7 +21,7 @@ namespace ndk_helper {
 
             glm::vec3 position{DEFAULT_POS_X, DEFAULT_POS_Y, DEFAULT_POS_Z};
             glm::vec3 up{0.0f, 1.0f, 0.0f};
-            glm::vec3 targetPos{0.0f, 0.0f, -0.1f};
+            glm::vec3 targetPos{0.0f, 0.0f, -1.0f};
             float width{0.0f};
             float height{0.0f};
         };

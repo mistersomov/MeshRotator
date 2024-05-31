@@ -1,7 +1,7 @@
 #ifndef MESH_ROTATOR_NDKHELPER_HPP
 #define MESH_ROTATOR_NDKHELPER_HPP
 
-#include "core/CoreBody.hpp"
+#include "core/Body.hpp"
 #include "core/SkinnedBody.hpp"
 #include "core/Camera.hpp"
 

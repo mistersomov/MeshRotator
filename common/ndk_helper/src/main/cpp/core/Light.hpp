@@ -1,5 +1,5 @@
-#ifndef MESH_ROTATOR_CORELIGHT_HPP
-#define MESH_ROTATOR_CORELIGHT_HPP
+#ifndef MESH_ROTATOR_LIGHT_HPP
+#define MESH_ROTATOR_LIGHT_HPP
 
 #include "../utils/GlmUtility.hpp"
 
@@ -10,8 +10,8 @@ namespace ndk_helper {
          * This class contains only basic properties of light such as color and ambient intensity.
          * The derived classes will contain more properties of light such as position, direction and etc.
          */
-        struct CoreLight {
-            virtual ~CoreLight() = default;
+        struct Light {
+            virtual ~Light() = default;
 
             float ambientIntensity{0.1f};
             float diffuseIntensity{1.0f};
@@ -20,4 +20,4 @@ namespace ndk_helper {
     }
 }
 
-#endif //MESH_ROTATOR_CORELIGHT_HPP
+#endif //MESH_ROTATOR_LIGHT_HPP
