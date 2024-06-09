@@ -194,6 +194,4 @@ void rndr::Renderer::prepare_graphics() {
     aout << "GL_VERSION: " << glGetString(GL_VERSION) << std::endl;
     aout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
     aout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
-
-    timeManager_->reset();
 }
