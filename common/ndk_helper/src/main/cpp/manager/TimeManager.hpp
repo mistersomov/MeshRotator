@@ -1,7 +1,8 @@
 #ifndef MESHROTATOR_TIMEMANAGER_HPP
 #define MESHROTATOR_TIMEMANAGER_HPP
 
-#include <time.h>
+#include <chrono>
+#include <cstdlib>
 
 namespace ndk_helper {
     namespace timemgr {
@@ -9,14 +10,21 @@ namespace ndk_helper {
         public:
             TimeManager();
 
-            double now();
-            float delta() const;
-            void update_time();
+            float getDelta() const;
+            float getDeltaTotal() const;
+            float getFPS() const;
+            void update();
             void reset();
 
         private:
-            double firstTime_{0.0};
-            float deltaTimeTotal_{0.0};
+            using Clock = std::chrono::steady_clock;
+            using TimePoint = std::chrono::time_point<Clock>;
+
+            TimePoint firstTime_;
+            TimePoint lastTime_;
+            float fps_;
+            float deltaPerFrame_;
+            float deltaTimeTotal_;
         };
     }
 }

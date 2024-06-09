@@ -39,7 +39,7 @@ void scene::MainScene::onCreate() {
 }
 
 void scene::MainScene::doFrame() {
-    timeManager_.update_time();
+    timeManager_.update();
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -62,12 +62,12 @@ void scene::MainScene::renderModels(scene::Model &model) const {
             glm::vec3{
                 model.getPosition().x,
                 model.getPosition().y,
-                sin(timeManager_.delta() * 2.0f * model.getPosition().z)
+                sin(timeManager_.getDeltaTotal() * 2.0f * model.getPosition().z)
             }
         )
             * glm::rotate(
                 identityMat_,
-                glm::radians(sin(timeManager_.delta() * TURBULENCE)),
+                glm::radians(sin(timeManager_.getDeltaTotal() * TURBULENCE)),
                 glm::vec3{0.0f, 0.0f, 1.0f}
             )
             * glm::scale(identityMat_, model.getScale());
@@ -235,7 +235,7 @@ void scene::MainScene::renderOutline(Model& model) const {
         glm::translate(identityMat_, model.getPosition())
             * glm::rotate(
                 identityMat_,
-                glm::radians(timeManager_.delta()*(-50.0f)),
+                glm::radians(timeManager_.getDeltaTotal() * (-50.0f)),
                 glm::vec3{0.0f, 1.0f, 0.0f}
             )
             * glm::scale(identityMat_, scaled*(model.getScale()));
